@@ -62,3 +62,13 @@ A PPC agregada mede a cesta do residente. O turista gasta sobretudo em restauran
 - Por dia lá: `Σ t_c`; em moeda de casa: `Σ t_c / E`. Total da viagem: `D × Σ t_c`.
 - Comparação com casa: `(Σ t_c / E) / Σ h_c` (sem valor quando `Σ h_c = 0`). Valores negativos ou inválidos contam como 0.
 - Valores iniciais sugeridos (editáveis): USD 150 / 20 / 25 / 30 / 15 por dia (hospedagem e restaurantes, supermercado, transporte, lazer, compras), convertidos para a moeda de casa por `USD→casa × P_casa,c / 100` e arredondados. São pontos de partida, não estatística.
+
+## Cartão ou dinheiro (Card vs. cash)
+- Entrada: valor a gastar `A` (moeda do destino), câmbio comercial de referência `E` (moeda do destino por 1 da moeda de casa; BCE ou digitado), custos em decimal (3% = 0,03).
+- Referência (sem custo algum): `A / E` (moeda de casa).
+- Cartão: `A/E × (1 + spread) × (1 + tarifa internacional) × (1 + IOF)`.
+- Saque em caixa eletrônico: `A/E × (1 + spread) × (1 + IOF) + tarifa fixa do banco (moeda de casa) + tarifa local do caixa / E`.
+- Casa de câmbio (dinheiro em espécie comprado antes): `A/E × (1 + spread)`.
+- Custo extra: `custo − referência`; em %: `extra / referência` (0 quando a referência é 0). Valores negativos ou vazios contam como 0. Mais barato: menor custo; empate resolvido na ordem cartão → saque → casa de câmbio.
+- IOF: só na versão em português, informado pelo usuário (vazio por padrão), aplicado a cartão e saque. As tarifas iniciais são exemplos editáveis (cartão 2% + 3%; saque 1% + USD 5 + USD 4 locais, convertidos pelo câmbio do dia; casa de câmbio 6%), não estatística.
+- Conversão dinâmica (DCC): recomenda-se sempre pagar na moeda local; o spread da DCC não entra na conta.

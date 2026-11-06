@@ -194,6 +194,9 @@ main[data-state="slow"] .when-slow,
 main[data-state="error"] .when-error,
 main[data-state="offline"] .when-error { display: block; }
 main:not([data-state="ready"]) .needs-data { display: none !important; }
+/* A tool that can run on a rate the visitor typed shows results without the official data. */
+main[data-manual] .needs-data { display: revert !important; }
+main[data-manual] .when-loading, main[data-manual] .when-slow, main[data-manual] .when-error { display: none; }
 .status { margin: 14px 0; padding: 12px 14px; border-radius: var(--radius-sm); border: var(--border) solid var(--line); background: var(--card); font-size: 14px; }
 .status.when-error { border-color: var(--dear); }
 .status .btn { margin-top: 8px; }

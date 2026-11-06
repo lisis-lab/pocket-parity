@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card vs. cash abroad: the true cost of each way to pay · CentAtlas</title>
+<meta name="description" content="Compare paying abroad by card, withdrawing cash at an ATM or buying currency at an exchange bureau, with the ECB mid-market rate and your own fees.">
+<link rel="canonical" href="https://pocketparity.pages.dev/card-vs-cash/">
+<link rel="alternate" hreflang="en" href="/card-vs-cash/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/cartao-ou-dinheiro/">
+<link rel="alternate" hreflang="x-default" href="/card-vs-cash/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Travel money</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Theme</label>
+    <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="sepia">Sepia</option><option value="contrast">High contrast</option><option value="sheet">Spreadsheet</option><option value="terminal">Terminal</option><option value="ledger">Ledger</option></select>
+    <a class="pill" href="/pt/cartao-ou-dinheiro/" hreflang="pt-BR" lang="pt-BR">PT</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="US" data-to="CH">
+  <p class="eyebrow">Travel money</p>
+  <h1>Card vs. cash</h1>
+  <p class="lead">Every way to pay abroad hides a markup over the mid-market rate. Put in your fees and see which one costs least.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Payment">
+      <div><label for="from">From (home)</label><select id="from"></select></div>
+      <div><label for="to">To (destination)</label><select id="to"></select></div>
+      <div><label for="amount">Amount to spend (<span data-slot="to-cur">CHF</span>)</label><input id="amount" class="num" type="text" inputmode="decimal" value="500"></div>
+      <div>
+        <label for="rate">Mid-market rate: <span data-slot="to-cur">CHF</span> per 1 <span data-slot="from-cur">USD</span></label>
+        <input id="rate" class="num" type="text" inputmode="decimal" placeholder="…">
+        <button class="linkbtn" id="resetRate" type="button">Use today's ECB rate</button>
+      </div>
+      <p class="note" style="margin:0">Example values — check your bank's.</p>
+      <fieldset><legend>Card</legend>
+        <div><label for="card-spread">Exchange markup (%)</label><input id="card-spread" class="num" type="text" inputmode="decimal" value="2"></div>
+        <div><label for="card-fee">Foreign transaction fee (%)</label><input id="card-fee" class="num" type="text" inputmode="decimal" value="3"></div>
+      </fieldset>
+      <fieldset><legend>ATM withdrawal</legend>
+        <div><label for="atm-spread">Exchange markup (%)</label><input id="atm-spread" class="num" type="text" inputmode="decimal" value="1"></div>
+        <div><label for="atm-fixed">Your bank's fee (<span data-slot="from-cur">…</span>)</label><input id="atm-fixed" class="num" type="text" inputmode="decimal" value=""></div>
+        <div><label for="atm-local">ATM owner's fee (<span data-slot="to-cur">…</span>)</label><input id="atm-local" class="num" type="text" inputmode="decimal" value=""></div>
+      </fieldset>
+      <fieldset><legend>Exchange bureau</legend>
+        <div><label for="bureau-spread">Markup over mid-market (%)</label><input id="bureau-spread" class="num" type="text" inputmode="decimal" value="6"></div>
+      </fieldset>
+      
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Official data is taking longer than usual to load…</p>
+      <div class="status when-error" role="alert">Can't reach the official data sources right now. Check your connection.<br><button class="btn" type="button" data-retry>Try again</button></div>
+
+      <div class="stmt needs-data">
+        <p class="verdict"><b data-slot="cheapest"></b> is the cheapest way to pay <span data-slot="amount"></span> here.</p>
+        <p class="sentence" data-variant="save">Save <b class="cheap" data-slot="save"></b> over <span data-slot="dearest"></span>.</p>
+        <p class="sentence" data-variant="tie" hidden>All three cost the same with these fees.</p>
+        <div class="answers">
+          <div class="ans"><span class="k">At the mid-market rate</span><div class="v" data-slot="reference"></div><p>What <span data-slot="amount"></span> costs with no markup at all.</p></div>
+          <div class="ans"><span class="k">Cheapest</span><div class="v accent" data-slot="best"></div><p>Total in your currency.</p></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Method</th><th>Total cost</th><th>Extra</th><th>Extra %</th></tr></thead>
+          <tbody>
+            <tr data-id="card"><td>Card</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+            <tr data-id="atm"><td>ATM withdrawal</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+            <tr data-id="bureau"><td>Exchange bureau</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+          </tbody>
+        </table>
+        <p class="note">If a card machine or ATM offers to charge you in your home currency, say no and pay in the local currency: that conversion (DCC) usually adds 3–7%.</p>
+        <p class="source">Mid-market rate: European Central Bank, <span data-slot="rates-date"></span> · Fees: entered by you</p>
+      </div>
+      <ul id="names" hidden><li data-id="card">Card</li><li data-id="atm">ATM withdrawal</li><li data-id="bureau">Exchange bureau</li></ul>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>How we calculate</summary>
+    <p><code>A</code> = amount in the local currency · <code>E</code> = mid-market rate (local currency per 1 unit of yours) · fees as decimals (3% = 0.03)</p>
+    <ul>
+      <li>Reference: <code>A / E</code></li>
+      <li>Card: <code>A/E × (1 + markup) × (1 + foreign fee)</code></li>
+      <li>ATM: <code>A/E × (1 + markup) + bank fee + ATM owner's fee / E</code></li>
+      <li>Exchange bureau: <code>A/E × (1 + markup)</code></li>
+    </ul>
+    <p>The mid-market rate is the ECB daily reference rate; you can type your own. Fees vary by bank and card, so the starting values are only examples.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Free money tools built on official data. Not financial advice.</footer>
+<script type="module" src="/assets/js/ui/cardcash.js"></script>
+</body>
+</html>

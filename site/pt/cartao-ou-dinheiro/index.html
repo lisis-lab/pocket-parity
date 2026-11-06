@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartão ou dinheiro no exterior: o custo real de cada forma de pagar · CentAtlas</title>
+<meta name="description" content="Compare pagar no exterior com cartão, sacar no caixa eletrônico ou comprar moeda na casa de câmbio, com o câmbio de referência do BCE e as suas tarifas.">
+<link rel="canonical" href="https://pocketparity.pages.dev/pt/cartao-ou-dinheiro/">
+<link rel="alternate" hreflang="en" href="/card-vs-cash/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/cartao-ou-dinheiro/">
+<link rel="alternate" hreflang="x-default" href="/card-vs-cash/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/pt/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Dinheiro de viagem</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Tema</label>
+    <select id="theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="sepia">Sépia</option><option value="contrast">Alto contraste</option><option value="sheet">Planilha</option><option value="terminal">Terminal</option><option value="ledger">Livro-caixa</option></select>
+    <a class="pill" href="/card-vs-cash/" hreflang="en" lang="en">EN</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="BR" data-to="PT">
+  <p class="eyebrow">Dinheiro de viagem</p>
+  <h1>Cartão ou dinheiro</h1>
+  <p class="lead">Toda forma de pagar no exterior esconde um custo sobre o câmbio comercial. Informe as suas tarifas e veja qual sai mais barata.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Pagamento">
+      <div><label for="from">De (casa)</label><select id="from"></select></div>
+      <div><label for="to">Para (destino)</label><select id="to"></select></div>
+      <div><label for="amount">Valor a gastar (<span data-slot="to-cur">EUR</span>)</label><input id="amount" class="num" type="text" inputmode="decimal" value="500"></div>
+      <div>
+        <label for="rate">Câmbio comercial: <span data-slot="to-cur">EUR</span> por 1 <span data-slot="from-cur">BRL</span></label>
+        <input id="rate" class="num" type="text" inputmode="decimal" placeholder="…">
+        <button class="linkbtn" id="resetRate" type="button">Usar o câmbio do BCE de hoje</button>
+      </div>
+      <p class="note" style="margin:0">Valores de exemplo — confira os do seu banco.</p>
+      <fieldset><legend>Cartão</legend>
+        <div><label for="card-spread">Spread do câmbio (%)</label><input id="card-spread" class="num" type="text" inputmode="decimal" value="2"></div>
+        <div><label for="card-fee">Tarifa internacional (%)</label><input id="card-fee" class="num" type="text" inputmode="decimal" value="3"></div>
+      </fieldset>
+      <fieldset><legend>Saque no caixa eletrônico</legend>
+        <div><label for="atm-spread">Spread do câmbio (%)</label><input id="atm-spread" class="num" type="text" inputmode="decimal" value="1"></div>
+        <div><label for="atm-fixed">Tarifa do seu banco (<span data-slot="from-cur">…</span>)</label><input id="atm-fixed" class="num" type="text" inputmode="decimal" value=""></div>
+        <div><label for="atm-local">Tarifa do caixa local (<span data-slot="to-cur">…</span>)</label><input id="atm-local" class="num" type="text" inputmode="decimal" value=""></div>
+      </fieldset>
+      <fieldset><legend>Casa de câmbio</legend>
+        <div><label for="bureau-spread">Spread sobre o comercial (%)</label><input id="bureau-spread" class="num" type="text" inputmode="decimal" value="6"></div>
+      </fieldset>
+      <div><label for="iof">IOF (%)</label><input id="iof" class="num" type="text" inputmode="decimal" placeholder="0"><p class="note" style="margin:4px 0 0">Imposto brasileiro sobre cartão e saque no exterior; informe a alíquota vigente.</p></div>
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Os dados oficiais estão demorando mais que o normal…</p>
+      <div class="status when-error" role="alert">Não foi possível acessar as fontes oficiais agora. Verifique sua conexão.<br><button class="btn" type="button" data-retry>Tentar de novo</button></div>
+
+      <div class="stmt needs-data">
+        <p class="verdict"><b data-slot="cheapest"></b>: a forma mais barata de pagar <span data-slot="amount"></span> aqui.</p>
+        <p class="sentence" data-variant="save">Economia de <b class="cheap" data-slot="save"></b> comparado com a opção mais cara (<span data-slot="dearest"></span>).</p>
+        <p class="sentence" data-variant="tie" hidden>As três custam o mesmo com essas tarifas.</p>
+        <div class="answers">
+          <div class="ans"><span class="k">No câmbio comercial</span><div class="v" data-slot="reference"></div><p>Quanto <span data-slot="amount"></span> custa sem custo algum.</p></div>
+          <div class="ans"><span class="k">Mais barato</span><div class="v accent" data-slot="best"></div><p>Total na sua moeda.</p></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Forma</th><th>Custo total</th><th>Extra</th><th>Extra %</th></tr></thead>
+          <tbody>
+            <tr data-id="card"><td>Cartão</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+            <tr data-id="atm"><td>Saque no caixa eletrônico</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+            <tr data-id="bureau"><td>Casa de câmbio</td><td class="num" data-cell="cost"></td><td class="num" data-cell="extra"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td></tr>
+          </tbody>
+        </table>
+        <p class="note">Se a maquininha ou o caixa oferecer cobrar na sua moeda, recuse e pague na moeda local: essa conversão (DCC) costuma somar de 3% a 7%.</p>
+        <p class="source">Câmbio comercial: Banco Central Europeu, <span data-slot="rates-date"></span> · Tarifas: informadas por você</p>
+      </div>
+      <ul id="names" hidden><li data-id="card">Cartão</li><li data-id="atm">Saque no caixa eletrônico</li><li data-id="bureau">Casa de câmbio</li></ul>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>Como calculamos</summary>
+    <p><code>A</code> = valor na moeda local · <code>E</code> = câmbio comercial (moeda local por 1 da sua) · tarifas em decimal (3% = 0,03)</p>
+    <ul>
+      <li>Referência: <code>A / E</code></li>
+      <li>Cartão: <code>A/E × (1 + spread) × (1 + tarifa internacional) × (1 + IOF)</code></li>
+      <li>Saque: <code>A/E × (1 + spread) × (1 + IOF) + tarifa do banco + tarifa do caixa / E</code></li>
+      <li>Casa de câmbio: <code>A/E × (1 + spread)</code></li>
+    </ul>
+    <p>O câmbio comercial é a taxa de referência diária do BCE; você pode digitar outro. As tarifas variam por banco e cartão, por isso os valores iniciais são só exemplos.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Ferramentas gratuitas com dados oficiais. Não é recomendação financeira.</footer>
+<script type="module" src="/assets/js/ui/cardcash.js"></script>
+</body>
+</html>
