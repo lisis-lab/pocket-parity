@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de inflação: quanto um valor do passado vale hoje (IPCA) · CentAtlas</title>
+<meta name="description" content="Calculadora de inflação pelo IPCA oficial do IBGE: veja quanto um valor em reais de qualquer ano desde 1995 vale hoje, com a inflação acumulada e a média anual.">
+<link rel="canonical" href="https://pocketparity.pages.dev/pt/calculadora-de-inflacao/">
+<link rel="alternate" hreflang="en" href="/inflation-calculator/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/calculadora-de-inflacao/">
+<link rel="alternate" hreflang="x-default" href="/inflation-calculator/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/pt/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Finanças pessoais</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Tema</label>
+    <select id="theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="sepia">Sépia</option><option value="contrast">Alto contraste</option><option value="sheet">Planilha</option><option value="terminal">Terminal</option><option value="ledger">Livro-caixa</option></select>
+    <a class="pill" href="/inflation-calculator/" hreflang="en" lang="en">EN</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-series="br-ipca" data-cur="BRL">
+  <p class="eyebrow">Finanças pessoais</p>
+  <h1>Calculadora de inflação</h1>
+  <p class="lead">Os preços sobem um pouco todo ano. Veja quanto um valor do passado vale em dinheiro de hoje, pelo IPCA, o índice oficial de inflação do Brasil.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Valores">
+      <div><label for="amount">Valor (BRL)</label><input id="amount" class="num" type="text" inputmode="decimal" value="100"></div>
+      <div><label for="fromYear">Do ano</label><select id="fromYear" disabled></select></div>
+      <div><label for="toYear">Para o ano</label><select id="toYear" disabled></select></div>
+      <button class="linkbtn" id="swap" type="button">⇅ Inverter anos</button>
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Os dados oficiais estão demorando mais que o normal…</p>
+      <div class="status when-error" role="alert">Não foi possível acessar as fontes oficiais agora. Verifique sua conexão.<br><button class="btn" type="button" data-retry>Tentar de novo</button></div>
+      <p class="status when-gap" role="status">Não há índice oficial para um desses anos.</p>
+
+      <div class="stmt needs-data">
+        <p class="sentence"><b data-slot="amount"></b> em <span data-slot="from"></span> equivalem a</p>
+        <div class="big accent" data-slot="value"></div>
+        <p class="sentence" style="margin-top:0">em <span data-slot="to"></span>.</p>
+        <div class="answers">
+          <div class="ans"><span class="k">Inflação acumulada</span><div class="v" data-slot="cumulative"></div></div>
+          <div class="ans"><span class="k">Média por ano</span><div class="v" data-slot="avg"></div></div>
+          <div class="ans"><span class="k">Período</span><div class="v"><span data-slot="years"></span> anos</div></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Ano</th><th>Índice</th><th>Valor</th></tr></thead>
+          <tbody id="miles"></tbody>
+        </table>
+        <p class="note">Cada ano usa o índice de dezembro; o ano só aparece depois que dezembro é publicado. Começa em 1995, já no Real.</p>
+        <p class="source">IBGE · IPCA, número-índice (SIDRA, tabela 1737)</p>
+      </div>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>Como calculamos</summary>
+    <p><code>A</code> = valor · <code>I<sub>ano</sub></code> = número-índice do IPCA em dezembro daquele ano</p>
+    <ul>
+      <li>Valor corrigido: <code>A × I<sub>para</sub> / I<sub>de</sub></code></li>
+      <li>Inflação acumulada: <code>I<sub>para</sub> / I<sub>de</sub> − 1</code></li>
+      <li>Média por ano: <code>(I<sub>para</sub> / I<sub>de</sub>)<sup>1/anos</sup> − 1</code></li>
+    </ul>
+    <p>O número-índice vem do IBGE (SIDRA, tabela 1737). Valores anteriores a 1995 não entram: antes do Real, as moedas mudaram e os valores não são comparáveis.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Ferramentas gratuitas com dados oficiais. Não é recomendação financeira.</footer>
+<script type="module" src="/assets/js/ui/inflation.js"></script>
+</body>
+</html>

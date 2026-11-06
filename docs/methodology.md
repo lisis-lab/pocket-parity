@@ -30,3 +30,51 @@ A PPC agregada mede a cesta do residente. O turista gasta sobretudo em restauran
 - [ ] Mapeamento de itens ↔ categorias COICOP.
 - [ ] Ajuste regional (ex.: RPP do BEA nos EUA).
 - [ ] Substituir os dados ilustrativos do protótipo.
+
+---
+
+# CentAtlas — fontes de dados (versão com busca no navegador)
+
+> Decidido em 2026-11-06: nesta versão os dados oficiais são buscados direto no navegador do visitante (sem servidor). **Sem dados, sem número**: se uma fonte falhar, a página não mostra valor algum, só um aviso de lentidão ou de sem conexão.
+
+## Níveis de preço por categoria
+- **Fonte:** World Bank, ICP 2021 (fonte 90 da API), classificação `PX.WL` (índice de nível de preços, Mundo = 100).
+- **Rebase para EUA = 100:** `P_c(país) = PX_c(país) / PX_c(EUA) × 100`.
+- **Séries:** `all` 9260000 (consumo das famílias sem moradia — o turista não paga aluguel), `rest` 1111000 (restaurantes e hotéis), `food` 1101000 (alimentos e bebidas não alcoólicas), `trans` 1107000 (transporte), `rec` 9110000 (recreação e cultura, consumo individual efetivo), `cloth` 1103000 (vestuário e calçados).
+- Um país sem alguma das seis séries fica fora da ferramenta (nunca é completado).
+- Limitação conhecida: o benchmark é de 2021. A troca por Eurostat 2023+ e a regra de extrapolação entre benchmarks continuam pendentes (ver acima).
+
+## Câmbio
+- **Fonte:** BCE, série `EXR.D.<moeda>.EUR.SP00.A`, última observação diária.
+- **Câmbio cruzado:** `E(origem→destino) = (moeda destino por EUR) / (moeda origem por EUR)`.
+
+## Inflação
+- **EUA:** World Bank `FP.CPI.TOTL` (CPI anual, 2010 = 100, origem BLS via FMI) até o último ano publicado. Os anos completos mais recentes vêm do BLS (`CUUR0000SA0`, CPI-U), encadeados no último ano do World Bank: `I_ano = I_WB,último × CPI_BLS,ano / CPI_BLS,último`. O valor anual do BLS é a média anual oficial (período M13); sem ela, a média dos 12 meses (o ano só entra se os 12 existirem).
+- **Brasil:** IBGE, SIDRA tabela 1737, variável 2266 (IPCA, número-índice, dez/1993 = 100). Valor anual = índice de dezembro. Só de 1995 em diante (antes do Real os valores em moeda não são comparáveis).
+
+## Cache e falhas
+- Cada resposta bem-sucedida fica guardada no navegador por 24 h. Depois disso é buscada de novo; cache vencido nunca é exibido.
+- Após 6 s sem resposta, aviso de lentidão. Erro, tempo esgotado (20 s) ou sem conexão: nenhum número, aviso e botão "Tentar de novo".
+
+## Orçamento diário de viagem (Daily travel budget)
+- Entrada: gasto diário em casa por categoria `h_c` (moeda de casa), número de dias `D` (inteiro ≥ 1), câmbio `E`.
+- Por categoria: `R_c = P_dest,c / P_orig,c` e gasto lá `t_c = h_c × E × R_c` (moeda do destino).
+- Por dia lá: `Σ t_c`; em moeda de casa: `Σ t_c / E`. Total da viagem: `D × Σ t_c`.
+- Comparação com casa: `(Σ t_c / E) / Σ h_c` (sem valor quando `Σ h_c = 0`). Valores negativos ou inválidos contam como 0.
+- Valores iniciais sugeridos (editáveis): USD 150 / 20 / 25 / 30 / 15 por dia (hospedagem e restaurantes, supermercado, transporte, lazer, compras), convertidos para a moeda de casa por `USD→casa × P_casa,c / 100` e arredondados. São pontos de partida, não estatística.
+
+## Cartão ou dinheiro (Card vs. cash)
+- Entrada: valor a gastar `A` (moeda do destino), câmbio comercial de referência `E` (moeda do destino por 1 da moeda de casa; BCE ou digitado), custos em decimal (3% = 0,03).
+- Referência (sem custo algum): `A / E` (moeda de casa).
+- Cartão: `A/E × (1 + spread) × (1 + tarifa internacional) × (1 + IOF)`.
+- Saque em caixa eletrônico: `A/E × (1 + spread) × (1 + IOF) + tarifa fixa do banco (moeda de casa) + tarifa local do caixa / E`.
+- Casa de câmbio (dinheiro em espécie comprado antes): `A/E × (1 + spread)`.
+- Custo extra: `custo − referência`; em %: `extra / referência` (0 quando a referência é 0). Valores negativos ou vazios contam como 0. Mais barato: menor custo; empate resolvido na ordem cartão → saque → casa de câmbio.
+- IOF: só na versão em português, informado pelo usuário (vazio por padrão), aplicado a cartão e saque. As tarifas iniciais são exemplos editáveis (cartão 2% + 3%; saque 1% + USD 5 + USD 4 locais, convertidos pelo câmbio do dia; casa de câmbio 6%), não estatística.
+- Conversão dinâmica (DCC): recomenda-se sempre pagar na moeda local; o spread da DCC não entra na conta.
+
+## Calculadora de inflação (Inflation calculator)
+- Índices anuais `I_ano` conforme a seção "Inflação" acima: EUA = World Bank `FP.CPI.TOTL` encadeado ao BLS CPI-U (média anual); Brasil = IBGE IPCA, índice de dezembro, de 1995 em diante (Plano Real).
+- Valor corrigido: `V = A × I_para / I_de` (funciona também para trás, `de > para`).
+- Inflação acumulada: `I_para / I_de − 1`. Média anual: `(I_para / I_de)^(1/|para − de|) − 1` (0 no mesmo ano).
+- Tabela de marcos: os anos extremos e os múltiplos de 5 entre eles. Ano sem índice: sem resultado.

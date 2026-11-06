@@ -3,39 +3,86 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lisis Lab</title>
-<meta name="description" content="Useful money tools built on official price and inflation data.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
-<style>
-:root{--paper:#eef2f1;--card:#fff;--ink:#122236;--muted:#5a6b7c;--line:#d3dcdf;--accent:#1f5fd6}
-@media (prefers-color-scheme:dark){:root{--paper:#0e1620;--card:#16212d;--ink:#e6edf3;--muted:#93a4b5;--line:#2a3846;--accent:#6f9cff;color-scheme:dark}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,sans-serif;padding:40px max(16px,env(safe-area-inset-left,0px))}
-main{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
-h1{font:800 clamp(32px,6vw,48px)/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;margin:0}
-h1 span{color:var(--accent)}
-p{color:var(--muted);margin:8px 0 0;max-width:60ch}
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-a.tool{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;color:inherit;text-decoration:none}
-a.tool:hover,a.tool:focus-visible{border-color:var(--accent);outline:none}
-a.tool strong{font:700 20px "Bricolage Grotesque",system-ui,sans-serif}
-a.tool span{color:var(--muted);font-size:14px}
-footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
-</style>
+<title>CentAtlas · Money tools with the math shown</title>
+<meta name="description" content="Calm, transparent money calculators for trips and everyday finance, built on official data from the World Bank, the ECB and national statistics offices.">
+<link rel="canonical" href="https://pocketparity.pages.dev/">
+<link rel="alternate" hreflang="en" href="/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/">
+<link rel="alternate" hreflang="x-default" href="/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
 </head>
 <body>
-<main>
-  <header>
-    <h1>Lisis<span>Lab</span></h1>
-    <p>Money tools built on official price and inflation data, with the method written out.</p>
-  </header>
-  <section class="tools">
-    <a class="tool" href="pocket-parity/">
-      <strong>Pocket Parity</strong>
-      <span>See what your travel money really buys abroad, by spending category.</span>
-    </a>
+<header class="top">
+  <a class="logo" href="/">Cent<span>·</span>Atlas</a>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Theme</label>
+    <select id="theme">
+      <option value="light">Light</option><option value="dark">Dark</option><option value="sepia">Sepia</option>
+      <option value="contrast">High contrast</option><option value="sheet">Spreadsheet</option>
+      <option value="terminal">Terminal</option><option value="ledger">Ledger</option>
+    </select>
+    <a class="pill" href="/pt/" hreflang="pt-BR" lang="pt-BR">PT</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="US" data-to="CH">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Money tools · official data</p>
+      <h1>Know what your money is <em>really</em> worth.</h1>
+      <p class="lead">Calm, transparent calculators for trips and everyday finance. Every formula is shown, every number has a source.</p>
+    </div>
+
+    <div class="stmt mini" aria-live="polite">
+      <span class="k">Try it · where are you going?</span>
+      <div class="row2">
+        <div><label for="mamount">Amount (<span data-slot="mcur">USD</span>)</label><input id="mamount" class="num" type="text" inputmode="decimal" value="5,000"></div>
+        <div><label for="mto">Destination</label><select id="mto"></select></div>
+      </div>
+      <p class="from"><label for="mfrom" style="display:inline">from</label> <select id="mfrom"></select></p>
+
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Official data is taking longer than usual to load…</p>
+      <div class="status when-error" role="alert">Can't reach the official data sources right now. Check your connection.<br><button class="btn" type="button" data-retry>Try again</button></div>
+      <p class="status when-gap" role="status">No official figures for this choice, or the exchange rate isn't valid. Check the rate or pick another country.</p>
+
+      <div class="needs-data">
+        <div data-variant="answer">
+          <p class="sentence">In <span data-slot="dest"></span>, your <b data-slot="amount"></b> buys what</p>
+          <div class="big accent" data-slot="feels"></div>
+          <p class="sentence" style="margin-top:0">buys at home.</p>
+          <hr class="rule">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>Biggest jump: <span data-slot="topcat"></span></span><span class="num" data-slot="toppct"></span></div>
+          <span class="bar" style="width:100%;margin:6px 0 0"><i></i></span>
+        </div>
+        <p class="sentence" data-variant="same" hidden>Pick two different countries.</p>
+        <p style="margin:14px 0 0"><a class="btn" id="mopen" href="/pocket-parity/">Open Pocket Parity →</a></p>
+      </div>
+      <ul id="catnames" hidden>
+        <li data-cat="rest">restaurants &amp; hotels</li><li data-cat="food">groceries</li><li data-cat="trans">transport</li>
+        <li data-cat="rec">recreation &amp; culture</li><li data-cat="cloth">clothing</li>
+      </ul>
+    </div>
   </section>
-  <footer>Lisis Lab · more tools coming.</footer>
+
+  <div class="sect"><h2>Travel money</h2><span class="ln"></span><small>3 tools</small></div>
+  <div class="grid">
+    <a class="tool" href="/pocket-parity/"><b>Pocket Parity</b><p>What your travel money really buys abroad.</p><span class="ft"><span class="src">WORLD BANK ICP · ECB</span><span class="arrow">Open →</span></span></a>
+    <a class="tool" href="/travel-budget/"><b>Daily travel budget</b><p>Your everyday spending, priced at your destination.</p><span class="ft"><span class="src">BY CATEGORY</span><span class="arrow">Open →</span></span></a>
+    <a class="tool" href="/card-vs-cash/"><b>Card vs. cash</b><p>The true cost of each way to pay abroad.</p><span class="ft"><span class="src">FEES &amp; SPREAD · ECB</span><span class="arrow">Open →</span></span></a>
+  </div>
+
+  <div class="sect"><h2>Personal finance</h2><span class="ln"></span><small>1 tool</small></div>
+  <div class="grid">
+    <a class="tool" href="/inflation-calculator/"><b>Inflation calculator</b><p>What a past amount is worth today.</p><span class="ft"><span class="src">WORLD BANK · BLS CPI</span><span class="arrow">Open →</span></span></a>
+  </div>
 </main>
+
+<footer class="foot">CentAtlas · Free money tools built on official data. Not financial advice.</footer>
+<script type="module" src="/assets/js/ui/home.js"></script>
 </body>
 </html>
