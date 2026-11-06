@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CentAtlas · Ferramentas de dinheiro com a conta à mostra</title>
+<meta name="description" content="Calculadoras de dinheiro claras e transparentes para viagens e finanças do dia a dia, com dados oficiais do Banco Mundial, do BCE e dos institutos de estatística.">
+<link rel="canonical" href="https://pocketparity.pages.dev/pt/">
+<link rel="alternate" hreflang="en" href="/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/">
+<link rel="alternate" hreflang="x-default" href="/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/pt/">Cent<span>·</span>Atlas</a>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Tema</label>
+    <select id="theme">
+      <option value="light">Claro</option><option value="dark">Escuro</option><option value="sepia">Sépia</option>
+      <option value="contrast">Alto contraste</option><option value="sheet">Planilha</option>
+      <option value="terminal">Terminal</option><option value="ledger">Livro-caixa</option>
+    </select>
+    <a class="pill" href="/" hreflang="en" lang="en">EN</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="BR" data-to="PT">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Ferramentas de dinheiro · dados oficiais</p>
+      <h1>Saiba quanto seu dinheiro <em>realmente</em> vale.</h1>
+      <p class="lead">Calculadoras claras e transparentes para viagens e para as finanças do dia a dia. Toda fórmula à mostra, todo número com fonte.</p>
+    </div>
+
+    <div class="stmt mini" aria-live="polite">
+      <span class="k">Experimente · para onde você vai?</span>
+      <div class="row2">
+        <div><label for="mamount">Valor (<span data-slot="mcur">BRL</span>)</label><input id="mamount" class="num" type="text" inputmode="decimal" value="5.000"></div>
+        <div><label for="mto">Destino</label><select id="mto"></select></div>
+      </div>
+      <p class="from"><label for="mfrom" style="display:inline">saindo de</label> <select id="mfrom"></select></p>
+
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Os dados oficiais estão demorando mais que o normal…</p>
+      <div class="status when-error" role="alert">Não foi possível acessar as fontes oficiais agora. Verifique sua conexão.<br><button class="btn" type="button" data-retry>Tentar de novo</button></div>
+
+      <div class="needs-data">
+        <div data-variant="answer">
+          <p class="sentence"><span data-slot="dest"></span>: seus <b data-slot="amount"></b> compram o mesmo que</p>
+          <div class="big accent" data-slot="feels"></div>
+          <p class="sentence" style="margin-top:0">compram em casa.</p>
+          <hr class="rule">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span>Maior alta: <span data-slot="topcat"></span></span><span class="num" data-slot="toppct"></span></div>
+          <span class="bar" style="width:100%;margin:6px 0 0"><i></i></span>
+        </div>
+        <p class="sentence" data-variant="same" hidden>Escolha dois países diferentes.</p>
+        <p style="margin:14px 0 0"><a class="btn" id="mopen" href="/pt/pocket-parity/">Abrir o Pocket Parity →</a></p>
+      </div>
+      <ul id="catnames" hidden>
+        <li data-cat="rest">restaurantes e hotéis</li><li data-cat="food">supermercado</li><li data-cat="trans">transporte</li>
+        <li data-cat="rec">lazer e cultura</li><li data-cat="cloth">vestuário</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="sect"><h2>Dinheiro de viagem</h2><span class="ln"></span><small>3 ferramentas</small></div>
+  <div class="grid">
+    <a class="tool" href="/pt/pocket-parity/"><b>Pocket Parity</b><p>O que seu dinheiro de viagem compra de verdade lá fora.</p><span class="ft"><span class="src">BANCO MUNDIAL ICP · BCE</span><span class="arrow">Abrir →</span></span></a>
+    <a class="tool" href="/pt/orcamento-de-viagem/"><b>Orçamento diário de viagem</b><p>Seus gastos do dia a dia com os preços do destino.</p><span class="ft"><span class="src">POR CATEGORIA</span><span class="arrow">Abrir →</span></span></a>
+    <a class="tool" href="/pt/cartao-ou-dinheiro/"><b>Cartão ou dinheiro</b><p>O custo real de cada forma de pagar no exterior.</p><span class="ft"><span class="src">TAXAS E SPREAD · BCE</span><span class="arrow">Abrir →</span></span></a>
+  </div>
+
+  <div class="sect"><h2>Finanças pessoais</h2><span class="ln"></span><small>1 ferramenta</small></div>
+  <div class="grid">
+    <a class="tool" href="/pt/calculadora-de-inflacao/"><b>Calculadora de inflação</b><p>Quanto um valor do passado vale hoje.</p><span class="ft"><span class="src">IBGE · IPCA</span><span class="arrow">Abrir →</span></span></a>
+  </div>
+</main>
+
+<footer class="foot">CentAtlas · Ferramentas gratuitas com dados oficiais. Não é recomendação financeira.</footer>
+<script type="module" src="/assets/js/ui/home.js"></script>
+</body>
+</html>

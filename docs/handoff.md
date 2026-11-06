@@ -10,7 +10,7 @@
   3. quanto precisaria levar para manter o padrão de casa;
   4. preço por tipo de gasto (jantar, hotel, mercado, transporte, museu, roupa) usando o nível de preços **da categoria**.
 - Formato pedido pelo Marlon: página única, com seletores de origem e destino.
-- A ferramenta não será a única: o site é a marca guarda-chuva **Lisis Lab** (organização GitHub `lisis-lab`), com uma pasta por ferramenta em `site/`.
+- A ferramenta não será a única: o site usa a marca **CentAtlas** (provisória; a organização GitHub continua `lisis-lab`), com uma pasta por ferramenta em `site/`.
 
 ## Estado atual
 - `site/pocket-parity/index.html`: protótipo funcional, 17 países, **dados ilustrativos** (marcado na página).
