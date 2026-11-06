@@ -17,9 +17,28 @@ Montar um piloto para mostrar ao Marlon: um site de ferramentas financeiras com 
 - O topo da página inicial traz uma **mini calculadora** do Pocket Parity que funciona.
 
 ### Suposições (corrigir se estiverem erradas)
-- O site continua estático, sem build, e o JS é módulo ES puro.
-- Os níveis de preço continuam **ilustrativos**, com aviso na página. O pipeline do Eurostat e do ICP fica fora deste trabalho.
-- A inflação usa dados oficiais reais desde já: CPI-U do BLS na página em inglês e IPCA do IBGE na página em português.
+- O site continua estático, sem build e **sem servidor**, e o JS é módulo ES puro.
+- **Dados reais buscados no navegador** (decidido em 2026-11-06, só para esta versão; depois pode virar pipeline ou servidor). Testado: Eurostat, World Bank, BCE, IBGE e BLS (este só os últimos 3 anos) aceitam chamadas do navegador (CORS).
+- **Sem dados, sem número.** Se a fonte estiver lenta ou fora do ar, a página não mostra número algum (nem embutido, nem estimado): mostra um aviso de lentidão ou de sem conexão.
+
+## Dados (todos ao vivo, no navegador)
+
+| Dado | Fonte e chamada | Uso |
+|---|---|---|
+| Níveis de preço por categoria | World Bank, **ICP 2021** (fonte 90), classificação `PX.WL` (Mundo = 100), rebaseado para EUA = 100: `P_c = PX_c(país) / PX_c(EUA) × 100`. Séries: `rest` 1111000 Restaurants and hotels · `food` 1101000 Food and non-alcoholic beverages · `trans` 1107000 Transport · `rec` 9110000 Actual recreation and culture · `cloth` 1103000 Clothing and footwear · `all` 9260000 Household consumption without housing (o turista não paga aluguel) | Pocket Parity, orçamento, mini calculadora |
+| Câmbio | **BCE**, série `EXR.D.<moeda>.EUR.SP00.A`, última observação; câmbio cruzado `E(origem→destino) = EUR→destino / EUR→origem` | Pocket Parity, orçamento, cartão vs. dinheiro |
+| Inflação EUA | **World Bank** `FP.CPI.TOTL` (CPI anual, 2010 = 100, origem BLS via FMI) até o último ano publicado, encadeado com o **BLS** CPI-U (`CUUR0000SA0`, média dos 12 meses) para os anos completos mais recentes: `I_ano = I_WB,último × CPI_BLS,ano / CPI_BLS,último_WB` | Inflation calculator (EN) |
+| Inflação Brasil | **IBGE/SIDRA** tabela 1737, variável 2266 (número-índice), índice de dezembro de cada ano, de 1995 em diante | Calculadora de inflação (PT) |
+
+- Os 17 países do protótipo têm categoria no ICP 2021 e câmbio no BCE.
+- **Cache:** cada resposta bem-sucedida fica no `localStorage` por 24 h (dentro de `try/catch`); é o mesmo dado oficial, só não é buscado de novo. Passadas 24 h, busca de novo; se falhar, vale a regra "sem dados, sem número".
+- **Estados de carregamento** (iguais em toda ferramenta):
+  - *carregando:* números trocados por traços cinza animados;
+  - *lento* (após 6 s): "Official data is taking longer than usual to load…" / "Os dados oficiais estão demorando mais que o normal…";
+  - *sem conexão / falhou:* nenhum número; "Can't reach the official data sources right now. Check your connection." / "Não foi possível acessar as fontes oficiais agora. Verifique sua conexão.", com botão Tentar de novo; também reage aos eventos `offline`/`online` do navegador;
+  - *pronto:* números com fonte e ano ("Price levels: World Bank ICP 2021 · Rates: ECB, <data>").
+- O que não depende de dados continua funcionando: entradas, temas e idioma. Cartão vs. dinheiro funciona sem dados se o visitante digitar o câmbio (o campo começa vazio enquanto o BCE carrega).
+- O aviso de "dados ilustrativos" sai do site.
 
 ## Identidade visual
 
@@ -70,15 +89,14 @@ site/
     js/
       theme.js             seletor de tema
       format.js            moeda e número via Intl, conforme <html lang>
-      countries.js         países, moedas, bandeiras e níveis de preço ilustrativos (hoje dentro do Pocket Parity)
+      countries.js         países: nome en/pt, moeda, código ISO3 do World Bank (sem números)
+      data/sources.js      busca com timeout, cache de 24 h e leitura das respostas (ICP, BCE, WB CPI, BLS, SIDRA)
+      status.js            estados carregando / lento / sem conexão / pronto
       calc/parity.js       funções puras do Pocket Parity
       calc/budget.js       funções puras do orçamento
       calc/cardcash.js     funções puras de cartão vs. dinheiro
       calc/inflation.js    funções puras da inflação
       ui/<ferramenta>.js   liga o formulário às funções puras
-  data/
-    cpi-us.json            CPI-U anual (BLS), com fonte e data da coleta
-    ipca-br.json           IPCA anual (IBGE), com fonte e data da coleta
 ```
 
 - O texto fica no HTML de cada idioma. O JS não traduz nada; ele só formata números conforme o `lang` (`en-US` ou `pt-BR`).
@@ -125,10 +143,7 @@ Compara o custo, na moeda de origem, de gastar `X` na moeda de destino. `E_mid` 
 - Entradas: valor, ano de origem e ano de destino (o padrão é o último ano completo disponível).
 - Conta: `valor_destino = valor × I_destino / I_origem`, onde `I` é o índice anual. A saída inclui a inflação acumulada (`I_destino / I_origem − 1`) e a média anual (`(I_destino / I_origem)^(1/anos) − 1`).
 - Saída: o valor equivalente em destaque, a tabela "ano a ano" resumida (a cada 5 anos) com barras e a fonte com a data da coleta.
-- Dados:
-  - **EN:** CPI-U, U.S. city average, all items, 1982–84 = 100 (BLS, série `CUUR0000SA0`), média anual. Só anos completos.
-  - **PT:** IPCA (IBGE, SIDRA tabela 1737), número-índice de dezembro de cada ano. Só anos completos.
-  - Coleta: `pipeline/fetch_inflation.py` (Python 3.11, `requests`) baixa das APIs oficiais e grava `site/data/*.json` no formato `{source, series, retrieved, base, values: {"2015": 237.017, ...}}`. Se a API falhar, o script para com erro e não grava nada. **Nenhum número é digitado à mão.**
+- Dados: ao vivo, conforme a seção "Dados" (EUA: World Bank + BLS encadeados; Brasil: IPCA do SIDRA desde 1995). Só anos completos. Os anos oferecidos nos seletores são os que vieram da fonte.
 
 ## Verificação
 
@@ -136,13 +151,15 @@ Compara o custo, na moeda de origem, de gastar `X` na moeda de destino. `E_mid` 
 - **`check.mjs` amplia a auditoria:**
   - toda página tem `hreflang` para o par, e o par aponta de volta;
   - toda página tem o seletor de tema e carrega `centatlas.css`;
-  - os JSON de dados existem e têm `source` e `retrieved`.
+  - nenhum número de nível de preço, câmbio ou índice embutido no HTML/JS (a auditoria procura os nomes `rate:` e `P:{` herdados do protótipo).
+- **Leitura das respostas:** testes com respostas reais salvas em `tests/fixtures/` (uma por fonte), cobrindo rebase EUA = 100, câmbio cruzado, encadeamento WB+BLS e índice de dezembro do IPCA.
+- **Estados:** testes do cálculo de estado (carregando → lento após 6 s → falhou/pronto; cache válido/vencido).
 - **Manual, antes da release:**
   - as quatro ferramentas nos dois idiomas, nos sete temas, em 375 px e no desktop;
   - teclado: tab até o seletor e os campos, com foco visível.
 
 ## Fora do escopo
-- O pipeline real de níveis de preço (Eurostat e ICP) e a troca dos dados ilustrativos.
+- Dados mais recentes que o ICP 2021 (Eurostat 2023+ e a regra de extrapolação entre benchmarks, do Marlon) e o pipeline ou servidor que vai substituir a busca no navegador.
 - Domínio próprio, AdSense, páginas de política de privacidade e "sobre", e as páginas de SEO.
 - Mudar o nome do repositório ou do projeto no Cloudflare.
 
