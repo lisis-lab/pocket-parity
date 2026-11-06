@@ -55,3 +55,10 @@ A PPC agregada mede a cesta do residente. O turista gasta sobretudo em restauran
 ## Cache e falhas
 - Cada resposta bem-sucedida fica guardada no navegador por 24 h. Depois disso é buscada de novo; cache vencido nunca é exibido.
 - Após 6 s sem resposta, aviso de lentidão. Erro, tempo esgotado (20 s) ou sem conexão: nenhum número, aviso e botão "Tentar de novo".
+
+## Orçamento diário de viagem (Daily travel budget)
+- Entrada: gasto diário em casa por categoria `h_c` (moeda de casa), número de dias `D` (inteiro ≥ 1), câmbio `E`.
+- Por categoria: `R_c = P_dest,c / P_orig,c` e gasto lá `t_c = h_c × E × R_c` (moeda do destino).
+- Por dia lá: `Σ t_c`; em moeda de casa: `Σ t_c / E`. Total da viagem: `D × Σ t_c`.
+- Comparação com casa: `(Σ t_c / E) / Σ h_c` (sem valor quando `Σ h_c = 0`). Valores negativos ou inválidos contam como 0.
+- Valores iniciais sugeridos (editáveis): USD 150 / 20 / 25 / 30 / 15 por dia (hospedagem e restaurantes, supermercado, transporte, lazer, compras), convertidos para a moeda de casa por `USD→casa × P_casa,c / 100` e arredondados. São pontos de partida, não estatística.

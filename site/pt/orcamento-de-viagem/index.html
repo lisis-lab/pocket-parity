@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orçamento diário de viagem: seus gastos do dia com os preços do destino · CentAtlas</title>
+<meta name="description" content="Monte um orçamento diário de viagem: informe quanto gasta por dia em casa e veja quanto o mesmo dia custa no destino, por categoria, com níveis de preço oficiais.">
+<link rel="canonical" href="https://pocketparity.pages.dev/pt/orcamento-de-viagem/">
+<link rel="alternate" hreflang="en" href="/travel-budget/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/orcamento-de-viagem/">
+<link rel="alternate" hreflang="x-default" href="/travel-budget/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/pt/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Dinheiro de viagem</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Tema</label>
+    <select id="theme"><option value="light">Claro</option><option value="dark">Escuro</option><option value="sepia">Sépia</option><option value="contrast">Alto contraste</option><option value="sheet">Planilha</option><option value="terminal">Terminal</option><option value="ledger">Livro-caixa</option></select>
+    <a class="pill" href="/travel-budget/" hreflang="en" lang="en">EN</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="BR" data-to="PT">
+  <p class="eyebrow">Dinheiro de viagem</p>
+  <h1>Orçamento diário de viagem</h1>
+  <p class="lead">Comece por um dia normal de gastos em casa. Veja quanto o mesmo dia custa no destino, categoria por categoria.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Viagem">
+      <div><label for="from">De (casa)</label><select id="from"></select></div>
+      <div><label for="to">Para (destino)</label><select id="to"></select></div>
+      <div><label for="days">Dias</label><input id="days" class="num" type="text" inputmode="numeric" value="7"></div>
+      <div>
+        <label for="rate"><span data-slot="to-cur">EUR</span> por 1 <span data-slot="from-cur">BRL</span></label>
+        <input id="rate" class="num" type="text" inputmode="decimal" placeholder="…">
+        <button class="linkbtn" id="resetRate" type="button">Usar o câmbio do BCE de hoje</button>
+      </div>
+      <fieldset>
+        <legend>Um dia em casa · por dia</legend>
+        <div><label for="h-rest">Hospedagem e restaurantes (<span data-slot="from-cur">BRL</span>)</label><input id="h-rest" data-cat="rest" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-food">Supermercado (<span data-slot="from-cur">BRL</span>)</label><input id="h-food" data-cat="food" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-trans">Transporte (<span data-slot="from-cur">BRL</span>)</label><input id="h-trans" data-cat="trans" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-rec">Lazer (<span data-slot="from-cur">BRL</span>)</label><input id="h-rec" data-cat="rec" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-cloth">Compras (<span data-slot="from-cur">BRL</span>)</label><input id="h-cloth" data-cat="cloth" class="num" type="text" inputmode="decimal"></div>
+      </fieldset>
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Os dados oficiais estão demorando mais que o normal…</p>
+      <div class="status when-error" role="alert">Não foi possível acessar as fontes oficiais agora. Verifique sua conexão.<br><button class="btn" type="button" data-retry>Tentar de novo</button></div>
+
+      <div class="stmt needs-data">
+        <div class="answers" style="margin-top:0">
+          <div class="ans"><span class="k">Total da viagem</span><div class="v accent" data-slot="trip"></div><p><span data-slot="days"></span> dias no destino.</p></div>
+          <div class="ans"><span class="k">Por dia</span><div class="v" data-slot="per-day"></div><p>Cerca de <span data-slot="per-day-home"></span> na sua moeda.</p></div>
+          <div class="ans vs"><span class="k">Comparado com casa</span><div class="v" data-slot="vs"></div>
+            <p data-variant="dear">Mais que o mesmo dia em casa.</p><p data-variant="cheap" hidden>Menos que o mesmo dia em casa.</p><p data-variant="equal" hidden>Parecido com um dia em casa.</p><p data-variant="none" hidden>Informe um valor diário para comparar.</p></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Categoria</th><th>Em casa / dia</th><th>Nível de preço</th><th>Lá / dia</th></tr></thead>
+          <tbody>
+            <tr data-cat="rest"><td>Hospedagem e restaurantes</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="food"><td>Supermercado</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="trans"><td>Transporte</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="rec"><td>Lazer</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="cloth"><td>Compras</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr class="tot"><td>Por dia</td><td class="num" data-slot="per-day-home-in"></td><td class="num" data-slot="vs-pct"></td><td class="num" data-slot="per-day-2"></td></tr>
+          </tbody>
+        </table>
+        <p class="note">Os valores iniciais são sugestões editáveis. Cada categoria usa o seu próprio nível de preço oficial.</p>
+        <p class="source">Níveis de preço: Banco Mundial, ICP 2021 (EUA = 100) · Câmbio: Banco Central Europeu, <span data-slot="rates-date"></span></p>
+      </div>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>Como calculamos</summary>
+    <p><code>h<sub>c</sub></code> = quanto você gasta por dia em casa na categoria <code>c</code> · <code>E</code> = câmbio · <code>R<sub>c</sub> = P<sub>destino,c</sub> / P<sub>casa,c</sub></code> · <code>D</code> = dias</p>
+    <ul>
+      <li>Lá, por categoria: <code>h<sub>c</sub> × E × R<sub>c</sub></code></li>
+      <li>Total da viagem: <code>D × Σ h<sub>c</sub> × E × R<sub>c</sub></code></li>
+      <li>Comparado com casa: <code>(Σ h<sub>c</sub> × R<sub>c</sub>) / Σ h<sub>c</sub></code></li>
+    </ul>
+    <p>Os níveis de preço vêm do Programa de Comparação Internacional (ICP) do Banco Mundial, edição 2021. O câmbio é a taxa de referência diária do BCE. Os valores iniciais são um dia de USD 150 / 20 / 25 / 30 / 15 ajustado ao nível de preços do seu país; mude para o seu jeito de viajar.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Ferramentas gratuitas com dados oficiais. Não é recomendação financeira.</footer>
+<script type="module" src="/assets/js/ui/budget.js"></script>
+</body>
+</html>
