@@ -6,3 +6,4 @@ __pycache__/
 Thumbs.db
 .wrangler/
 node_modules/
+.superpowers/
