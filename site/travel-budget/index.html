@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily travel budget: your everyday spending, priced abroad · CentAtlas</title>
+<meta name="description" content="Plan a daily travel budget: enter what you spend per day at home and see what the same day costs at your destination, by category, with official price levels.">
+<link rel="canonical" href="https://pocketparity.pages.dev/travel-budget/">
+<link rel="alternate" hreflang="en" href="/travel-budget/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/orcamento-de-viagem/">
+<link rel="alternate" hreflang="x-default" href="/travel-budget/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Travel money</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Theme</label>
+    <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="sepia">Sepia</option><option value="contrast">High contrast</option><option value="sheet">Spreadsheet</option><option value="terminal">Terminal</option><option value="ledger">Ledger</option></select>
+    <a class="pill" href="/pt/orcamento-de-viagem/" hreflang="pt-BR" lang="pt-BR">PT</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-from="US" data-to="CH">
+  <p class="eyebrow">Travel money</p>
+  <h1>Daily travel budget</h1>
+  <p class="lead">Start from a normal day of spending at home. See what the same day costs at your destination, category by category.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Trip">
+      <div><label for="from">From (home)</label><select id="from"></select></div>
+      <div><label for="to">To (destination)</label><select id="to"></select></div>
+      <div><label for="days">Days</label><input id="days" class="num" type="text" inputmode="numeric" value="7"></div>
+      <div>
+        <label for="rate"><span data-slot="to-cur">CHF</span> per 1 <span data-slot="from-cur">USD</span></label>
+        <input id="rate" class="num" type="text" inputmode="decimal" placeholder="…">
+        <button class="linkbtn" id="resetRate" type="button">Use today's ECB rate</button>
+      </div>
+      <fieldset>
+        <legend>A day at home · per day</legend>
+        <div><label for="h-rest">Lodging &amp; dining (<span data-slot="from-cur">USD</span>)</label><input id="h-rest" data-cat="rest" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-food">Groceries (<span data-slot="from-cur">USD</span>)</label><input id="h-food" data-cat="food" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-trans">Transport (<span data-slot="from-cur">USD</span>)</label><input id="h-trans" data-cat="trans" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-rec">Leisure (<span data-slot="from-cur">USD</span>)</label><input id="h-rec" data-cat="rec" class="num" type="text" inputmode="decimal"></div>
+        <div><label for="h-cloth">Shopping (<span data-slot="from-cur">USD</span>)</label><input id="h-cloth" data-cat="cloth" class="num" type="text" inputmode="decimal"></div>
+      </fieldset>
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Official data is taking longer than usual to load…</p>
+      <div class="status when-error" role="alert">Can't reach the official data sources right now. Check your connection.<br><button class="btn" type="button" data-retry>Try again</button></div>
+      <p class="status when-gap" role="status">No official figures for this choice, or the exchange rate isn't valid. Check the rate or pick another country.</p>
+
+      <div class="stmt needs-data">
+        <div class="answers" style="margin-top:0">
+          <div class="ans"><span class="k">Trip total</span><div class="v accent" data-slot="trip"></div><p><span data-slot="days"></span> days at your destination.</p></div>
+          <div class="ans"><span class="k">Per day</span><div class="v" data-slot="per-day"></div><p>About <span data-slot="per-day-home"></span> in your currency.</p></div>
+          <div class="ans vs"><span class="k">Versus home</span><div class="v" data-slot="vs"></div>
+            <p data-variant="dear">More than the same day at home.</p><p data-variant="cheap" hidden>Less than the same day at home.</p><p data-variant="equal" hidden>About the same as at home.</p><p data-variant="none" hidden>Enter a daily amount to compare.</p></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Category</th><th>Home / day</th><th>Price level</th><th>There / day</th></tr></thead>
+          <tbody>
+            <tr data-cat="rest"><td>Lodging &amp; dining</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="food"><td>Groceries</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="trans"><td>Transport</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="rec"><td>Leisure</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr data-cat="cloth"><td>Shopping</td><td class="num" data-cell="home"></td><td class="num"><span class="pct"></span><span class="bar"><i></i></span></td><td class="num" data-cell="there"></td></tr>
+            <tr class="tot"><td>Per day</td><td class="num" data-slot="per-day-home-in"></td><td class="num" data-slot="vs-pct"></td><td class="num" data-slot="per-day-2"></td></tr>
+          </tbody>
+        </table>
+        <p class="note">The starting amounts are editable suggestions. Each category uses its own official price level.</p>
+        <p class="source">Price levels: World Bank, ICP 2021 (US = 100) · Exchange rate: European Central Bank, <span data-slot="rates-date"></span></p>
+      </div>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>How we calculate</summary>
+    <p><code>h<sub>c</sub></code> = what you spend per day at home in category <code>c</code> · <code>E</code> = exchange rate · <code>R<sub>c</sub> = P<sub>destination,c</sub> / P<sub>home,c</sub></code> · <code>D</code> = days</p>
+    <ul>
+      <li>There, per category: <code>h<sub>c</sub> × E × R<sub>c</sub></code></li>
+      <li>Trip total: <code>D × Σ h<sub>c</sub> × E × R<sub>c</sub></code></li>
+      <li>Versus home: <code>(Σ h<sub>c</sub> × R<sub>c</sub>) / Σ h<sub>c</sub></code></li>
+    </ul>
+    <p>Price levels come from the World Bank International Comparison Program (ICP), 2021 edition. The exchange rate is the ECB daily reference rate. Starting amounts are a USD 150 / 20 / 25 / 30 / 15 day adjusted to your home price level; change them to match how you travel.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Free money tools built on official data. Not financial advice.</footer>
+<script type="module" src="/assets/js/ui/budget.js"></script>
+</body>
+</html>

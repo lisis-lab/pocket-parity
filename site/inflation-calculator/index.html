@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inflation calculator: what a past dollar amount is worth today · CentAtlas</title>
+<meta name="description" content="US inflation calculator built on the official CPI: see what a dollar amount from any year since 1960 is worth today, with cumulative and average annual inflation.">
+<link rel="canonical" href="https://pocketparity.pages.dev/inflation-calculator/">
+<link rel="alternate" hreflang="en" href="/inflation-calculator/">
+<link rel="alternate" hreflang="pt-BR" href="/pt/calculadora-de-inflacao/">
+<link rel="alternate" hreflang="x-default" href="/inflation-calculator/">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/assets/centatlas.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/">Cent<span>·</span>Atlas</a>
+  <span class="crumb">/ Personal finance</span>
+  <nav class="nav">
+    <label class="visually-hidden" for="theme">Theme</label>
+    <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="sepia">Sepia</option><option value="contrast">High contrast</option><option value="sheet">Spreadsheet</option><option value="terminal">Terminal</option><option value="ledger">Ledger</option></select>
+    <a class="pill" href="/pt/calculadora-de-inflacao/" hreflang="pt-BR" lang="pt-BR">PT</a>
+  </nav>
+</header>
+
+<main class="wrap" data-state="loading" data-series="us-cpi" data-cur="USD">
+  <p class="eyebrow">Personal finance</p>
+  <h1>Inflation calculator</h1>
+  <p class="lead">Prices rise a little every year. See what an amount from the past is worth in today's money, using the official US consumer price index.</p>
+
+  <div class="tp">
+    <aside class="side" aria-label="Values">
+      <div><label for="amount">Amount (USD)</label><input id="amount" class="num" type="text" inputmode="decimal" value="100"></div>
+      <div><label for="fromYear">From year</label><select id="fromYear" disabled></select></div>
+      <div><label for="toYear">To year</label><select id="toYear" disabled></select></div>
+      <button class="linkbtn" id="swap" type="button">⇅ Swap years</button>
+    </aside>
+
+    <section aria-live="polite">
+      <div class="when-loading" aria-hidden="true"><span class="skeleton big"></span><span class="skeleton"></span><span class="skeleton"></span></div>
+      <p class="status when-slow" role="status">Official data is taking longer than usual to load…</p>
+      <div class="status when-error" role="alert">Can't reach the official data sources right now. Check your connection.<br><button class="btn" type="button" data-retry>Try again</button></div>
+      <p class="status when-gap" role="status">There is no official index for one of those years.</p>
+
+      <div class="stmt needs-data">
+        <p class="sentence"><b data-slot="amount"></b> in <span data-slot="from"></span> is worth</p>
+        <div class="big accent" data-slot="value"></div>
+        <p class="sentence" style="margin-top:0">in <span data-slot="to"></span>.</p>
+        <div class="answers">
+          <div class="ans"><span class="k">Cumulative inflation</span><div class="v" data-slot="cumulative"></div></div>
+          <div class="ans"><span class="k">Average per year</span><div class="v" data-slot="avg"></div></div>
+          <div class="ans"><span class="k">Period</span><div class="v"><span data-slot="years"></span> years</div></div>
+        </div>
+      </div>
+
+      <div class="tablewrap needs-data">
+        <table class="ledger">
+          <thead><tr><th>Year</th><th>Index</th><th>Value</th></tr></thead>
+          <tbody id="miles"></tbody>
+        </table>
+        <p class="note">Indexes are annual averages; a full year is needed before it appears here.</p>
+        <p class="source">World Bank (FP.CPI.TOTL, from the BLS via the IMF) chained to the BLS CPI-U annual average</p>
+      </div>
+    </section>
+  </div>
+
+  <details class="how">
+    <summary>How we calculate</summary>
+    <p><code>A</code> = amount · <code>I<sub>year</sub></code> = consumer price index for that year</p>
+    <ul>
+      <li>Value: <code>A × I<sub>to</sub> / I<sub>from</sub></code></li>
+      <li>Cumulative inflation: <code>I<sub>to</sub> / I<sub>from</sub> − 1</code></li>
+      <li>Average per year: <code>(I<sub>to</sub> / I<sub>from</sub>)<sup>1/years</sup> − 1</code></li>
+    </ul>
+    <p>The index is the World Bank's annual CPI series for the United States; the most recent years come from the BLS CPI-U annual average, chained to the World Bank's last published year.</p>
+  </details>
+</main>
+
+<footer class="foot">CentAtlas · Free money tools built on official data. Not financial advice.</footer>
+<script type="module" src="/assets/js/ui/inflation.js"></script>
+</body>
+</html>
