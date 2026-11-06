@@ -1,18 +1,18 @@
 // Card vs. cash page. Works with the live ECB rate, or with a rate the visitor types (even offline).
 import { COUNTRIES, fillCountrySelect } from '../countries.js';
-import { money, fmtNumber, parseNumber } from '../format.js';
+import { money, fmtNumber, parseNumber, rateFromField } from '../format.js';
 import { loadRates, crossRate } from '../data/sources.js';
 import { trackStatus } from '../status.js';
 import { nice } from '../calc/parity.js';
 import { compareCosts } from '../calc/cardcash.js';
-import { lang, $, $$, fill, showVariant, setupPage, remember, recall, rateDecimals } from './common.js';
+import { lang, $, $$, fill, showVariant, setupPage, remember, recall, rateDecimals, setGap } from './common.js';
 
 setupPage();
 const main = $('main');
 const from = $('#from'), to = $('#to'), amount = $('#amount'), rate = $('#rate');
 const memKey = `cc-${lang}`;
 const saved = recall(memKey);
-let perEur = null, ratesDate = '';
+let perEur = null, ratesDate = '', shownRate = '';
 
 fillCountrySelect(from, lang, COUNTRIES[saved?.f] ? saved.f : main.dataset.from);
 fillCountrySelect(to, lang, COUNTRIES[saved?.t] ? saved.t : main.dataset.to);
@@ -25,7 +25,7 @@ const label = (id) => $(`#names [data-id="${id}"]`).textContent;
 
 function setRate() {
   const r = liveRate();
-  rate.value = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
+  rate.value = shownRate = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
 }
 
 /** Example fixed fees: USD 5 at your bank, USD 4 at the ATM, converted with the live rate. */
@@ -39,7 +39,7 @@ function setFeeDefaults() {
 function render() {
   const h = from.value, d = to.value;
   fill('from-cur', cur(h)); fill('to-cur', cur(d));
-  const E = parseNumber(rate.value, lang);
+  const E = rateFromField(rate.value, shownRate, liveRate(), lang);
   // A typed rate is enough to compute, even when the official data is unavailable.
   if (main.dataset.state !== 'ready') main.toggleAttribute('data-manual', E > 0);
   const r = compareCosts({
@@ -49,7 +49,9 @@ function render() {
     bureau: { spread: share('bureau-spread') },
     iof: share('iof'),
   });
-  if (!r) { main.removeAttribute('data-manual'); return; }
+  // No usable rate: once the data is in (or the visitor typed something), say so instead of showing old numbers.
+  setGap(main, !r && (main.dataset.state === 'ready' || rate.value.trim() !== ''));
+  if (!r) return;
 
   const sorted = [...r.options].sort((a, b) => a.cost - b.cost);
   const best = sorted[0], worst = sorted[sorted.length - 1];

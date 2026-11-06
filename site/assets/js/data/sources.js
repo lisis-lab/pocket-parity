@@ -18,14 +18,18 @@ function defaultStorage() {
   try { return globalThis.localStorage ?? null; } catch { return null; }
 }
 
-/** Fetch JSON with a timeout; reuse a successful response for ttlMs. Expired or corrupt cache is ignored. */
+/**
+ * Fetch JSON with a timeout; reuse a successful response for ttlMs. Expired or corrupt cache is ignored.
+ * parse(data) turns the body into the result; a body it rejects (throws) is never cached.
+ */
 export async function fetchCached(url, {
   ttlMs = DAY, timeoutMs = 20_000, storage = defaultStorage(), now = Date.now, fetchImpl = globalThis.fetch,
+  parse = (d) => d,
 } = {}) {
   const key = `ca:${url}`;
   try {
     const hit = JSON.parse(storage?.getItem(key) ?? 'null');
-    if (hit && typeof hit.t === 'number' && now() - hit.t < ttlMs) return hit.data;
+    if (hit && typeof hit.t === 'number' && now() - hit.t < ttlMs) return parse(hit.data);
   } catch { /* corrupt or blocked cache: fetch live */ }
 
   const ctrl = new AbortController();
@@ -38,8 +42,9 @@ export async function fetchCached(url, {
   } finally {
     clearTimeout(timer);
   }
+  const result = parse(data);
   try { storage?.setItem(key, JSON.stringify({ t: now(), data })); } catch { /* storage full or blocked */ }
-  return data;
+  return result;
 }
 
 let jsonpSeq = 0;
@@ -172,31 +177,40 @@ export function parseSidraDecember(json) {
 export async function loadPriceLevels() {
   const iso3s = Object.values(COUNTRIES).map((c) => c.iso3);
   // The ICP "sources" endpoint sends no CORS headers; JSONP works from any page (no server needed).
-  const json = await fetchCached(URLS.icp(iso3s, Object.values(SERIES)), { fetchImpl: jsonpFetch });
-  const levels = priceLevels(parseIcp(json));
-  if (!levels.US) throw new Error('ICP: missing United States reference');
+  const levels = await fetchCached(URLS.icp(iso3s, Object.values(SERIES)), {
+    fetchImpl: jsonpFetch,
+    parse: (json) => {
+      const l = priceLevels(parseIcp(json));
+      if (!l.US) throw new Error('ICP: missing United States reference');
+      return l;
+    },
+  });
   return { levels, source: 'World Bank ICP 2021' };
 }
 
 export async function loadRates() {
   const curs = [...new Set(Object.values(COUNTRIES).map((c) => c.cur).filter((c) => c !== 'EUR'))];
-  const { date, perEur } = parseEcb(await fetchCached(URLS.ecb(curs)));
-  if (!date) throw new Error('ECB: no observations');
+  const { date, perEur } = await fetchCached(URLS.ecb(curs), {
+    parse: (json) => { const r = parseEcb(json); if (!r.date) throw new Error('ECB: no observations'); return r; },
+  });
   return { date, perEur, source: 'ECB' };
 }
 
 const lastYearOf = (values) => Math.max(...Object.keys(values).map(Number));
 
 export async function loadUsCpi() {
-  const [wbJson, blsJson] = await Promise.all([fetchCached(URLS.wbCpi), fetchCached(URLS.bls).catch(() => null)]);
-  const wb = parseWbCpi(wbJson);
-  if (!Object.keys(wb).length) throw new Error('World Bank CPI: empty');
-  const values = blsJson ? chainCpi(wb, parseBlsAnnual(blsJson)) : wb;
+  const nonEmpty = (name, f) => (json) => { const v = f(json); if (!Object.keys(v).length) throw new Error(`${name}: empty`); return v; };
+  const [wb, bls] = await Promise.all([
+    fetchCached(URLS.wbCpi, { parse: nonEmpty('World Bank CPI', parseWbCpi) }),
+    fetchCached(URLS.bls, { parse: nonEmpty('BLS', parseBlsAnnual) }).catch(() => null),
+  ]);
+  const values = bls ? chainCpi(wb, bls) : wb;
   return { values, lastYear: lastYearOf(values), source: 'World Bank (FP.CPI.TOTL) + BLS CPI-U' };
 }
 
 export async function loadIpca() {
-  const values = parseSidraDecember(await fetchCached(URLS.sidra));
-  if (!Object.keys(values).length) throw new Error('SIDRA: empty');
+  const values = await fetchCached(URLS.sidra, {
+    parse: (json) => { const v = parseSidraDecember(json); if (!Object.keys(v).length) throw new Error('SIDRA: empty'); return v; },
+  });
   return { values, lastYear: lastYearOf(values), source: 'IBGE · IPCA (SIDRA, tabela 1737)' };
 }

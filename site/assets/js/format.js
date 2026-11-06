@@ -38,3 +38,9 @@ export function parseNumber(text, lang) {
   const x = parseFloat(s);
   return Number.isFinite(x) ? x : 0;
 }
+
+/** Rate to compute with: the live rate while the field still shows it, otherwise what the visitor typed. */
+export function rateFromField(text, shown, live, lang) {
+  if (live && String(text).trim() === String(shown).trim()) return live;
+  return parseNumber(text, lang);
+}

@@ -131,3 +131,13 @@ test('fetchCached times out', async () => {
   const hang = (url, { signal }) => new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted'))));
   await assert.rejects(S.fetchCached('t', { storage: null, timeoutMs: 20, fetchImpl: hang }));
 });
+
+test('fetchCached: a body the parser rejects is not cached', async () => {
+  const store = new Map(); const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+  const res = (body) => async () => ({ ok: true, json: async () => body });
+  const parse = (d) => { if (!d.good) throw new Error('bad body'); return d.good; };
+  await assert.rejects(S.fetchCached('p', { storage, now: () => 0, fetchImpl: res({ message: 'err' }), parse }), /bad body/);
+  assert.equal(store.size, 0);
+  assert.equal(await S.fetchCached('p', { storage, now: () => 1, fetchImpl: res({ good: 7 }), parse }), 7);
+  assert.equal(await S.fetchCached('p', { storage, now: () => 2, fetchImpl: res({ good: 9 }), parse }), 7);
+});

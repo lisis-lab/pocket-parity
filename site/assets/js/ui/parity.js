@@ -1,10 +1,10 @@
 // Pocket Parity page: wires the form to calc/parity.js and the live official data.
 import { COUNTRIES, countryName, fillCountrySelect } from '../countries.js';
-import { money, pct, fmtNumber, parseNumber } from '../format.js';
+import { money, pct, fmtNumber, parseNumber, rateFromField } from '../format.js';
 import { loadPriceLevels, loadRates, crossRate } from '../data/sources.js';
 import { trackStatus } from '../status.js';
 import { parity, itemPrice, readParams, nice } from '../calc/parity.js';
-import { lang, $, $$, fill, showVariant, setupPage, remember, recall, barWidth, tone, rateDecimals, inSentence } from './common.js';
+import { lang, $, $$, fill, showVariant, setupPage, remember, recall, barWidth, tone, rateDecimals, inSentence, setGap } from './common.js';
 
 setupPage();
 const main = $('main');
@@ -12,7 +12,7 @@ const from = $('#from'), to = $('#to'), amount = $('#amount'), rate = $('#rate')
 const params = readParams(location.search);
 const memKey = `pp-${lang}`;
 const saved = recall(memKey);
-let levels = null, perEur = null, ratesDate = '';
+let levels = null, perEur = null, ratesDate = '', shownRate = '';
 
 fillCountrySelect(from, lang, params.from || (COUNTRIES[saved?.f] ? saved.f : main.dataset.from));
 fillCountrySelect(to, lang, params.to || (COUNTRIES[saved?.t] ? saved.t : main.dataset.to));
@@ -23,7 +23,7 @@ const liveRate = () => (perEur ? crossRate(perEur, cur(from.value), cur(to.value
 
 function setRate() {
   const r = liveRate();
-  rate.value = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
+  rate.value = shownRate = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
 }
 
 function resetHomePrices() {
@@ -37,13 +37,14 @@ function resetHomePrices() {
 function render() {
   if (!levels || !perEur) return;
   const h = from.value, d = to.value;
-  if (!levels[h] || !levels[d]) { main.dataset.state = 'error'; return; }
-  const E = parseNumber(rate.value, lang) || liveRate();
+  if (!levels[h] || !levels[d]) { setGap(main, true); return; }
+  const E = rateFromField(rate.value, shownRate, liveRate(), lang) || liveRate();
   const A = parseNumber(amount.value, lang);
   const r = parity({ amount: A, rate: E, pOrig: levels[h], pDest: levels[d] });
   fill('from-cur', cur(h)); fill('to-cur', cur(d));
   fill('home', inSentence(h, countryName(h, lang))); fill('dest', inSentence(d, countryName(d, lang), true));
-  if (!r) { showVariant($('.verdicts'), 'same'); return; }
+  setGap(main, !r);
+  if (!r) return;
 
   const p = Math.round((r.ratio - 1) * 100);
   showVariant($('.verdicts'), h === d ? 'same' : Math.abs(p) < 3 ? 'equal' : p > 0 ? 'dear' : 'cheap');

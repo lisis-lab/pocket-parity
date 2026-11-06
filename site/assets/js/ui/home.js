@@ -4,7 +4,7 @@ import { money, pct, parseNumber } from '../format.js';
 import { loadPriceLevels, loadRates, crossRate } from '../data/sources.js';
 import { trackStatus } from '../status.js';
 import { parity } from '../calc/parity.js';
-import { lang, isPt, $, fill, showVariant, setupPage, inSentence } from './common.js';
+import { lang, isPt, $, fill, showVariant, setupPage, inSentence, setGap } from './common.js';
 
 setupPage();
 const main = $('main');
@@ -24,10 +24,11 @@ function render() {
   const base = isPt ? '/pt/pocket-parity/' : '/pocket-parity/';
   open.href = `${base}?amount=${encodeURIComponent(A)}&from=${h}&to=${d}`;
   if (!levels || !perEur) return;
-  if (!levels[h] || !levels[d]) { main.dataset.state = 'error'; return; }
-  if (h === d) { showVariant(card, 'same'); return; }
+  if (!levels[h] || !levels[d]) { setGap(main, true); return; }
+  if (h === d) { setGap(main, false); showVariant(card, 'same'); return; }
   const r = parity({ amount: A, rate: crossRate(perEur, cur(h), cur(d)), pOrig: levels[h], pDest: levels[d] });
-  if (!r) { main.dataset.state = 'error'; return; }
+  setGap(main, !r);
+  if (!r) return;
   showVariant(card, 'answer');
   fill('dest', inSentence(d, countryName(d, lang)), card);
   fill('amount', money(A, cur(h), lang), card);

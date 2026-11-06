@@ -1,11 +1,11 @@
 // Daily travel budget page: wires the form to calc/budget.js and the live official data.
 import { COUNTRIES, CATEGORIES, fillCountrySelect } from '../countries.js';
-import { money, pct, fmtNumber, parseNumber } from '../format.js';
+import { money, pct, fmtNumber, parseNumber, rateFromField } from '../format.js';
 import { loadPriceLevels, loadRates, crossRate } from '../data/sources.js';
 import { trackStatus } from '../status.js';
 import { nice } from '../calc/parity.js';
 import { dailyBudget } from '../calc/budget.js';
-import { lang, $, $$, fill, showVariant, setupPage, remember, recall, barWidth, tone, rateDecimals } from './common.js';
+import { lang, $, $$, fill, showVariant, setupPage, remember, recall, barWidth, tone, rateDecimals, setGap } from './common.js';
 
 setupPage();
 const main = $('main');
@@ -13,7 +13,7 @@ const from = $('#from'), to = $('#to'), days = $('#days'), rate = $('#rate');
 const memKey = `tb-${lang}`;
 const saved = recall(memKey);
 const USD_DAY = { rest: 150, food: 20, trans: 25, rec: 30, cloth: 15 };
-let levels = null, perEur = null, ratesDate = '';
+let levels = null, perEur = null, ratesDate = '', shownRate = '';
 
 fillCountrySelect(from, lang, COUNTRIES[saved?.f] ? saved.f : main.dataset.from);
 fillCountrySelect(to, lang, COUNTRIES[saved?.t] ? saved.t : main.dataset.to);
@@ -24,7 +24,7 @@ const input = (c) => $(`#h-${c}`);
 
 function setRate() {
   const r = liveRate();
-  rate.value = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
+  rate.value = shownRate = r ? fmtNumber(r, lang, rateDecimals(r)) : '';
 }
 
 function resetHome() {
@@ -39,12 +39,13 @@ function render() {
   const h = from.value, d = to.value;
   fill('from-cur', cur(h)); fill('to-cur', cur(d));
   if (!levels || !perEur) return;
-  if (!levels[h] || !levels[d]) { main.dataset.state = 'error'; return; }
-  const E = parseNumber(rate.value, lang) || liveRate();
+  if (!levels[h] || !levels[d]) { setGap(main, true); return; }
+  const E = rateFromField(rate.value, shownRate, liveRate(), lang) || liveRate();
   const home = Object.fromEntries(CATEGORIES.map((c) => [c, parseNumber(input(c).value, lang)]));
   const n = Math.max(1, Math.floor(parseNumber(days.value, lang) || 0));
   const r = dailyBudget({ home, rate: E, pOrig: levels[h], pDest: levels[d], days: n });
-  if (!r) { main.dataset.state = 'error'; return; }
+  setGap(main, !r);
+  if (!r) return;
 
   fill('days', fmtNumber(n, lang, 0));
   fill('trip', money(r.tripThere, cur(d), lang));

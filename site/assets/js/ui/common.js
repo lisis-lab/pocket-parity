@@ -49,3 +49,8 @@ export function tone(ratio) {
 export function rateDecimals(r) {
   return r >= 100 ? 1 : r >= 10 ? 2 : 4;
 }
+
+/** Data is loaded but this choice cannot be computed: hide the numbers and show .when-gap (or clear it). */
+export function setGap(main, on) {
+  main.toggleAttribute('data-gap', Boolean(on));
+}

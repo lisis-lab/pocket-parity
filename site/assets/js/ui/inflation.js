@@ -3,7 +3,7 @@ import { money, fmtNumber, parseNumber } from '../format.js';
 import { loadUsCpi, loadIpca } from '../data/sources.js';
 import { trackStatus } from '../status.js';
 import { adjust, milestones, yearRange } from '../calc/inflation.js';
-import { lang, $, fill, setupPage } from './common.js';
+import { lang, $, fill, setupPage, setGap } from './common.js';
 
 setupPage();
 const main = $('main');
@@ -30,7 +30,8 @@ function render() {
   const A = parseNumber(amount.value, lang);
   const f = Number(fromYear.value), t = Number(toYear.value);
   let r;
-  try { r = adjust({ amount: A, fromYear: f, toYear: t, values }); } catch { main.dataset.state = 'error'; return; }
+  try { r = adjust({ amount: A, fromYear: f, toYear: t, values }); } catch { setGap(main, true); return; }
+  setGap(main, false);
   fill('amount', money(A, cur, lang));
   fill('from', String(f)); fill('to', String(t));
   fill('value', money(r.value, cur, lang));

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { money, pct, parseNumber, localeFor, fmtNumber } from '../site/assets/js/format.js';
+import { money, pct, parseNumber, localeFor, fmtNumber, rateFromField } from '../site/assets/js/format.js';
 
 const n = (s) => s.replace(/ | /g, ' ');
 
@@ -40,4 +40,11 @@ test('fmtNumber', () => {
   assert.equal(fmtNumber(1234.5678, 'en', 2), '1,234.57');
   assert.equal(n(fmtNumber(1234.5678, 'pt-BR', 1)), '1.234,6');
   assert.equal(fmtNumber(NaN, 'en', 2), '—');
+});
+
+test('rateFromField: untouched field uses the live rate, edited field uses the typed one', () => {
+  assert.equal(rateFromField('0,0050', '0,0050', 0.004973, 'pt'), 0.004973);
+  assert.equal(rateFromField('0,006', '0,0050', 0.004973, 'pt'), 0.006);
+  assert.equal(rateFromField('', '0,0050', 0.004973, 'pt'), 0);
+  assert.equal(rateFromField('1.2', '', null, 'en'), 1.2);
 });
