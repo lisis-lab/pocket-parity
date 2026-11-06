@@ -72,3 +72,9 @@ A PPC agregada mede a cesta do residente. O turista gasta sobretudo em restauran
 - Custo extra: `custo − referência`; em %: `extra / referência` (0 quando a referência é 0). Valores negativos ou vazios contam como 0. Mais barato: menor custo; empate resolvido na ordem cartão → saque → casa de câmbio.
 - IOF: só na versão em português, informado pelo usuário (vazio por padrão), aplicado a cartão e saque. As tarifas iniciais são exemplos editáveis (cartão 2% + 3%; saque 1% + USD 5 + USD 4 locais, convertidos pelo câmbio do dia; casa de câmbio 6%), não estatística.
 - Conversão dinâmica (DCC): recomenda-se sempre pagar na moeda local; o spread da DCC não entra na conta.
+
+## Calculadora de inflação (Inflation calculator)
+- Índices anuais `I_ano` conforme a seção "Inflação" acima: EUA = World Bank `FP.CPI.TOTL` encadeado ao BLS CPI-U (média anual); Brasil = IBGE IPCA, índice de dezembro, de 1995 em diante (Plano Real).
+- Valor corrigido: `V = A × I_para / I_de` (funciona também para trás, `de > para`).
+- Inflação acumulada: `I_para / I_de − 1`. Média anual: `(I_para / I_de)^(1/|para − de|) − 1` (0 no mesmo ano).
+- Tabela de marcos: os anos extremos e os múltiplos de 5 entre eles. Ano sem índice: sem resultado.
