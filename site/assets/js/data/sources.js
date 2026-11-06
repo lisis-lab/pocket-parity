@@ -42,6 +42,28 @@ export async function fetchCached(url, {
   return data;
 }
 
+let jsonpSeq = 0;
+
+/**
+ * fetch()-compatible loader for World Bank endpoints that send no CORS headers (the ICP "sources" API).
+ * The World Bank v2 API answers format=jsonp with a script calling our callback. Honors AbortSignal.
+ */
+export function jsonpFetch(url, { signal, doc = globalThis.document } = {}) {
+  return new Promise((resolve, reject) => {
+    const name = `__caJsonp${Date.now().toString(36)}${jsonpSeq++}`;
+    const u = new URL(url);
+    u.searchParams.set('format', 'jsonp');
+    u.searchParams.set('prefix', name);
+    const script = doc.createElement('script');
+    const done = () => { delete globalThis[name]; script.remove?.(); };
+    globalThis[name] = (data) => { done(); resolve({ ok: true, status: 200, json: async () => data }); };
+    script.onerror = () => { done(); reject(new Error(`JSONP failed for ${url}`)); };
+    signal?.addEventListener('abort', () => { done(); reject(new Error(`JSONP timeout for ${url}`)); });
+    script.src = u.toString();
+    doc.head.appendChild(script);
+  });
+}
+
 // ---------- Parsers (pure) ----------
 
 export function parseIcp(json) {
@@ -149,7 +171,8 @@ export function parseSidraDecember(json) {
 
 export async function loadPriceLevels() {
   const iso3s = Object.values(COUNTRIES).map((c) => c.iso3);
-  const json = await fetchCached(URLS.icp(iso3s, Object.values(SERIES)));
+  // The ICP "sources" endpoint sends no CORS headers; JSONP works from any page (no server needed).
+  const json = await fetchCached(URLS.icp(iso3s, Object.values(SERIES)), { fetchImpl: jsonpFetch });
   const levels = priceLevels(parseIcp(json));
   if (!levels.US) throw new Error('ICP: missing United States reference');
   return { levels, source: 'World Bank ICP 2021' };

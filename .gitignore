@@ -7,3 +7,5 @@ Thumbs.db
 .wrangler/
 node_modules/
 .superpowers/
+.playwright-mcp/
+.claude/

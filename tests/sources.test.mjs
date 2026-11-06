@@ -100,6 +100,33 @@ test('fetchCached: fresh cache, expired cache, corrupt cache, failure, blocked s
   assert.deepEqual(await S.fetchCached('w', { storage: throwing, now: () => 0, fetchImpl: ok }), { v: 4 });
 });
 
+test('jsonpFetch loads through a script tag and cleans up', async () => {
+  const added = [];
+  const doc = {
+    createElement: () => ({ remove() { added.splice(added.indexOf(this), 1); } }),
+    head: {
+      appendChild(el) {
+        added.push(el);
+        const cb = new URL(el.src).searchParams.get('prefix');
+        assert.match(el.src, /format=jsonp/);
+        queueMicrotask(() => globalThis[cb]({ hello: 1 }));
+      },
+    },
+  };
+  const res = await S.jsonpFetch('https://api.example.org/x?format=json&a=1', { doc });
+  assert.equal(res.ok, true);
+  assert.deepEqual(await res.json(), { hello: 1 });
+  assert.equal(Object.keys(globalThis).filter((k) => k.startsWith('__caJsonp')).length, 0);
+});
+
+test('jsonpFetch rejects on script error', async () => {
+  const doc = {
+    createElement: () => ({ remove() {} }),
+    head: { appendChild(el) { queueMicrotask(() => el.onerror(new Error('net'))); } },
+  };
+  await assert.rejects(S.jsonpFetch('https://api.example.org/x?format=json', { doc }));
+});
+
 test('fetchCached times out', async () => {
   const hang = (url, { signal }) => new Promise((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted'))));
   await assert.rejects(S.fetchCached('t', { storage: null, timeoutMs: 20, fetchImpl: hang }));

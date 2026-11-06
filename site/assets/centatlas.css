@@ -132,6 +132,7 @@ h2 { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin
 
 /* ---------- Tool page ---------- */
 .tp { display: grid; gap: 20px; margin-top: 16px; }
+.tp > *, .hero > * { min-width: 0; }
 @media (min-width: 760px) { .tp { grid-template-columns: 250px 1fr; align-items: start; } }
 .side { background: var(--card); border: var(--border) solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
 .side fieldset { border: 0; border-top: var(--border) solid var(--line); margin: 4px 0 0; padding: 10px 0 0; display: grid; gap: 10px; }
