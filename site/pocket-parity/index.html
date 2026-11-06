@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="See what your travel money really buys abroad: exchange rate plus price levels by spending category.">
+<title>Pocket Parity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one working column. Converter ticket on top, three answers, then a per-category price board. */
+:root{
+  --paper:#eef2f1;
+  --card:#ffffff;
+  --ink:#122236;
+  --muted:#5a6b7c;
+  --line:#d3dcdf;
+  --accent:#1f5fd6;
+  --accent-soft:#e3ecfc;
+  --dear:#b4411f;
+  --dear-soft:#f8e5dd;
+  --cheap:#1d7a4f;
+  --cheap-soft:#dcf1e6;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1620;--card:#16212d;--ink:#e6edf3;--muted:#93a4b5;--line:#2a3846;
+    --accent:#6f9cff;--accent-soft:#1c2c47;--dear:#f08a66;--dear-soft:#3a2219;
+    --cheap:#5ccf95;--cheap-soft:#173226;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1620;--card:#16212d;--ink:#e6edf3;--muted:#93a4b5;--line:#2a3846;
+  --accent:#6f9cff;--accent-soft:#1c2c47;--dear:#f08a66;--dear-soft:#3a2219;
+  --cheap:#5ccf95;--cheap-soft:#173226;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 48px}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;line-height:1;margin:0}
+.brand span{color:var(--accent)}
+.tag{margin:6px 0 0;color:var(--muted);max-width:52ch}
+.proto{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--dear);border:1px solid currentColor;border-radius:999px;padding:4px 10px;white-space:nowrap}
+
+.ticket{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;
+  grid-template-columns:1fr auto 1fr;gap:16px;align-items:end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+label,.lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+select,input{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+input{font-family:var(--mono);font-variant-numeric:tabular-nums}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.amount{font-size:22px;font-weight:600}
+.pair{display:flex;flex-direction:column;gap:10px;min-width:0}
+.swap{font:inherit;font-size:20px;background:var(--accent-soft);color:var(--accent);border:0;border-radius:999px;width:44px;height:44px;cursor:pointer;align-self:center;margin-bottom:28px}
+.swap:hover{background:var(--accent);color:var(--card)}
+.rate-row{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;border-top:1px dashed var(--line);padding-top:14px;color:var(--muted);font-size:14px}
+.rate-row input{width:9.5em;padding:6px 10px;font-size:14px}
+.rate-row button{font:inherit;font-size:13px;background:none;border:0;color:var(--accent);cursor:pointer;text-decoration:underline;padding:0}
+
+.verdict{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.6vw,30px);line-height:1.2;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.verdict .hi{padding:0 .2em;border-radius:6px}
+.verdict .dear{color:var(--dear);background:var(--dear-soft)}
+.verdict .cheap{color:var(--cheap);background:var(--cheap-soft)}
+
+.answers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ans{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ans.key{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.ans .num{font-family:var(--mono);font-weight:600;font-size:clamp(20px,3vw,26px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ans p{margin:0;color:var(--muted);font-size:14px}
+
+h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.board{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td input{width:7.5em;padding:6px 8px;font-size:14px}
+.item{font-weight:600}
+.item small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.bar{position:relative;height:10px;background:var(--paper);border-radius:5px;width:140px}
+.bar i{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.5}
+.pct{font-family:var(--mono);font-size:13px;font-weight:600}
+.pct.dear{color:var(--dear)} .pct.cheap{color:var(--cheap)}
+
+.method{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;font-size:14px;color:var(--muted)}
+.method div{min-width:0}
+.method h3{font-family:var(--display);font-size:16px;color:var(--ink);margin:0 0 6px}
+.method p{margin:0 0 8px;max-width:62ch}
+code{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+
+@media (max-width:640px){
+  .ticket{grid-template-columns:1fr}
+  .swap{margin:0;justify-self:center;transform:rotate(90deg)}
+  .answers{grid-template-columns:1fr}
+  .method{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){ .bar i{transition:width .3s ease} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="brand">Pocket<span>Parity</span></h1>
+      <p class="tag">The exchange counter tells you how much cash you get. This tells you what that cash actually buys.</p>
+    </div>
+    <span class="proto">Prototype · illustrative data</span>
+  </header>
+
+  <section class="ticket" aria-label="Converter">
+    <div class="pair">
+      <div class="field">
+        <label for="from">I live in</label>
+        <select id="from"></select>
+      </div>
+      <div class="field">
+        <label for="amount">I'm taking</label>
+        <input id="amount" class="amount" type="text" inputmode="decimal" value="5000">
+      </div>
+    </div>
+    <button class="swap" id="swap" type="button" aria-label="Swap countries" title="Swap countries">⇄</button>
+    <div class="pair">
+      <div class="field">
+        <label for="to">I'm visiting</label>
+        <select id="to"></select>
+      </div>
+      <div class="field">
+        <span class="lbl">At the exchange counter</span>
+        <div class="amount" id="cashBig" style="font-family:var(--mono);padding:10px 0;font-variant-numeric:tabular-nums">—</div>
+      </div>
+    </div>
+    <div class="rate-row">
+      <span>Exchange rate: 1 <span id="rFrom"></span> =</span>
+      <input id="rate" type="text" inputmode="decimal" aria-label="Exchange rate">
+      <span id="rTo"></span>
+      <button type="button" id="resetRate">reset to reference</button>
+      <span>· Card and kiosk rates are usually 2–8% worse.</span>
+    </div>
+  </section>
+
+  <p class="verdict" id="verdict">—</p>
+
+  <section class="answers" aria-label="Results">
+    <div class="ans">
+      <span class="lbl">You receive</span>
+      <span class="num" id="aCash">—</span>
+      <p>Cash in local currency at the rate above.</p>
+    </div>
+    <div class="ans key">
+      <span class="lbl">It will feel like</span>
+      <span class="num" id="aFeel">—</span>
+      <p id="aFeelTxt">What that money buys, measured in home prices.</p>
+    </div>
+    <div class="ans">
+      <span class="lbl">To spend like at home, budget</span>
+      <span class="num" id="aNeed">—</span>
+      <p id="aNeedTxt">—</p>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <h2>What things cost there</h2>
+      <p class="sub">Type what you usually pay at home. Tourists mostly spend on restaurants, hotels and transport, so each line uses its own category price level instead of the national average.</p>
+    </div>
+    <div class="board">
+      <table>
+        <thead><tr><th>Item</th><th>At home</th><th>Equivalent there</th><th>In home money</th><th>Price level vs home</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="method" aria-label="Methodology">
+    <div>
+      <h3>How it works</h3>
+      <p>Let <code>E</code> be the exchange rate (destination currency per unit of home currency) and <code>P</code> the price level of each country relative to the US (US = 100).</p>
+      <p>Cash received: <code>A × E</code>. Relative price level: <code>R = P<sub>dest</sub> / P<sub>home</sub></code>. It feels like <code>A / R</code>, and keeping your home standard costs <code>A × R</code>.</p>
+      <p>For each item: <code>price × E × P<sub>dest,cat</sub> / P<sub>home,cat</sub></code>. It's the Big Mac Index idea, applied to every spending category.</p>
+    </div>
+    <div>
+      <h3>About the data</h3>
+      <p>This prototype uses rounded price levels in the style of the World Bank ICP and Eurostat PPP tables, plus approximate exchange rates. The numbers are illustrative only and not official.</p>
+      <p>The full version will pull category price levels from Eurostat and the ICP, roll them forward with category inflation (HICP/CPI) between benchmark years, and use daily ECB/Fed reference rates.</p>
+      <p>Figures are national averages. Zurich costs more than rural Switzerland.</p>
+    </div>
+  </section>
+
+  <footer>Pocket Parity · prototype built for testing the method. Not financial advice.</footer>
+</div>
+
+<script>
+// Illustrative data. rate = units per 1 USD. P = price level, US = 100.
+// Categories: all, rest (restaurants & hotels), food (groceries), trans (transport), rec (recreation & culture), cloth (clothing)
+const C = {
+  US:{n:"United States",cur:"USD",rate:1,    P:{all:100,rest:100,food:100,trans:100,rec:100,cloth:100}},
+  CA:{n:"Canada",       cur:"CAD",rate:1.38, P:{all:90, rest:95, food:100,trans:90, rec:90, cloth:95}},
+  MX:{n:"Mexico",       cur:"MXN",rate:18.5, P:{all:55, rest:55, food:60, trans:60, rec:55, cloth:75}},
+  BR:{n:"Brazil",       cur:"BRL",rate:5.4,  P:{all:50, rest:50, food:55, trans:65, rec:55, cloth:75}},
+  GB:{n:"United Kingdom",cur:"GBP",rate:0.78,P:{all:95, rest:100,food:90, trans:105,rec:95, cloth:85}},
+  CH:{n:"Switzerland",  cur:"CHF",rate:0.80, P:{all:150,rest:150,food:160,trans:135,rec:140,cloth:120}},
+  NO:{n:"Norway",       cur:"NOK",rate:10.8, P:{all:125,rest:145,food:140,trans:130,rec:125,cloth:115}},
+  DE:{n:"Germany",      cur:"EUR",rate:0.92, P:{all:88, rest:85, food:90, trans:95, rec:90, cloth:90}},
+  FR:{n:"France",       cur:"EUR",rate:0.92, P:{all:92, rest:95, food:100,trans:95, rec:90, cloth:95}},
+  NL:{n:"Netherlands",  cur:"EUR",rate:0.92, P:{all:95, rest:95, food:90, trans:100,rec:95, cloth:95}},
+  IT:{n:"Italy",        cur:"EUR",rate:0.92, P:{all:82, rest:85, food:90, trans:90, rec:85, cloth:90}},
+  ES:{n:"Spain",        cur:"EUR",rate:0.92, P:{all:72, rest:72, food:78, trans:80, rec:75, cloth:85}},
+  PT:{n:"Portugal",     cur:"EUR",rate:0.92, P:{all:65, rest:62, food:75, trans:75, rec:70, cloth:85}},
+  GR:{n:"Greece",       cur:"EUR",rate:0.92, P:{all:66, rest:70, food:80, trans:72, rec:70, cloth:90}},
+  JP:{n:"Japan",        cur:"JPY",rate:150,  P:{all:70, rest:55, food:85, trans:70, rec:65, cloth:80}},
+  TH:{n:"Thailand",     cur:"THB",rate:34,   P:{all:40, rest:35, food:55, trans:50, rec:45, cloth:70}},
+  AU:{n:"Australia",    cur:"AUD",rate:1.52, P:{all:100,rest:100,food:105,trans:100,rec:95, cloth:95}},
+};
+// Default home prices in USD; converted to the home country's typical price on change.
+const ITEMS = [
+  {id:"dinner", name:"Dinner for two", note:"mid-range restaurant", cat:"rest", usd:60},
+  {id:"hotel",  name:"Hotel night",    note:"3-star, double room",  cat:"rest", usd:160},
+  {id:"coffee", name:"Coffee & pastry",note:"café breakfast",        cat:"rest", usd:9},
+  {id:"grocery",name:"Grocery basket", note:"a week of basics",      cat:"food", usd:80},
+  {id:"transit",name:"Transit day pass",note:"city public transport",cat:"trans",usd:10},
+  {id:"museum", name:"Museum ticket",  note:"major museum, adult",   cat:"rec",  usd:25},
+  {id:"jeans",  name:"Pair of jeans",  note:"mid-range brand",       cat:"cloth",usd:60},
+];
+const $ = id => document.getElementById(id);
+const THE = new Set(["US","GB","NL"]);
+const nm = (k,cap) => THE.has(k) ? (cap?"The ":"the ")+C[k].n : C[k].n;
+const from=$("from"), to=$("to"), amount=$("amount"), rate=$("rate");
+let homePrices = {}, rateEdited=false;
+
+for (const [k,c] of Object.entries(C)){
+  from.add(new Option(`${c.n} (${c.cur})`, k));
+  to.add(new Option(`${c.n} (${c.cur})`, k));
+}
+from.value="US"; to.value="CH";
+try{ const s=JSON.parse(localStorage.getItem("pp")||"null"); if(s&&C[s.f]&&C[s.t]){from.value=s.f;to.value=s.t;} }catch(e){}
+
+const parse = v => { const x=parseFloat(String(v).replace(/[^0-9.,-]/g,"").replace(/,(?=\d{3}\b)/g,"").replace(",",".")); return isFinite(x)?x:0; };
+const fmt = (v,cur) => { const d = Math.abs(v)>=1000 || ["JPY"].includes(cur) ? 0 : 2;
+  try{ return new Intl.NumberFormat("en-US",{style:"currency",currency:cur,maximumFractionDigits:d,minimumFractionDigits:d}).format(v);}catch(e){return v.toFixed(d)+" "+cur;} };
+const nice = v => { if(v>=1000) return Math.round(v/50)*50; if(v>=100) return Math.round(v/5)*5; if(v>=10) return Math.round(v); return Math.round(v*2)/2; };
+const refRate = () => C[to.value].rate / C[from.value].rate;
+const rateFmt = r => r>=100? r.toFixed(1) : r>=10? r.toFixed(2) : r.toFixed(4);
+
+function resetHomePrices(){
+  const h=C[from.value]; homePrices={};
+  for(const it of ITEMS) homePrices[it.id] = nice(it.usd * h.rate * h.P[it.cat]/100);
+}
+function setRate(){ rate.value = rateFmt(refRate()); rateEdited=false; }
+
+function render(){
+  const h=C[from.value], d=C[to.value], A=parse(amount.value), E=parse(rate.value)||refRate();
+  $("rFrom").textContent=h.cur; $("rTo").textContent=d.cur;
+  const R = d.P.all / h.P.all;
+  const cash = A*E;
+  $("cashBig").textContent = fmt(cash,d.cur);
+  $("aCash").textContent = fmt(cash,d.cur);
+  $("aFeel").textContent = fmt(A/R,h.cur);
+  $("aNeed").textContent = fmt(A*R,h.cur);
+  const hn=nm(from.value), dn=nm(to.value), Dn=nm(to.value,true);
+  $("aFeelTxt").textContent = `Your ${fmt(A,h.cur)} buys in ${dn} what ${fmt(A/R,h.cur)} buys in ${hn}.`;
+  $("aNeedTxt").textContent = `That's ${fmt(A*R*E,d.cur)} in local cash.`;
+
+  const pct = Math.round((R-1)*100);
+  const v=$("verdict");
+  if (from.value===to.value) v.textContent="Pick two different countries to compare.";
+  else if (Math.abs(pct)<3) v.innerHTML=`${Dn} costs about the same as ${hn}.`;
+  else if (pct>0) v.innerHTML=`${Dn} is about <span class="hi dear">${pct}% more expensive</span> than ${hn}.`;
+  else v.innerHTML=`${Dn} is about <span class="hi cheap">${-pct}% cheaper</span> than ${hn}.`;
+
+  const tb=$("rows");
+  if(!tb.children.length){
+    for(const it of ITEMS){
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td class="item">${it.name}<small>${it.note}</small></td>
+        <td class="n"><input id="p-${it.id}" type="text" inputmode="decimal" aria-label="${it.name} price at home"></td>
+        <td class="n" id="t-${it.id}"></td><td class="n" id="h-${it.id}"></td>
+        <td><div style="display:flex;align-items:center;gap:10px"><div class="bar"><i id="b-${it.id}"></i><b style="left:50%"></b></div><span class="pct" id="c-${it.id}"></span></div></td>`;
+      tb.appendChild(tr);
+      $("p-"+it.id).addEventListener("input",e=>{homePrices[it.id]=parse(e.target.value); render();});
+    }
+  }
+  for(const it of ITEMS){
+    const inp=$("p-"+it.id);
+    if(document.activeElement!==inp) inp.value=homePrices[it.id];
+    const p=homePrices[it.id]||0, rc=d.P[it.cat]/h.P[it.cat];
+    $("t-"+it.id).textContent=fmt(p*E*rc,d.cur);
+    $("h-"+it.id).textContent=fmt(p*rc,h.cur);
+    // bar: home = 50% of the track; track spans 0x to 2x home
+    const w=Math.max(2,Math.min(100,rc*50)), b=$("b-"+it.id);
+    b.style.width=w+"%"; b.style.background= rc>1.03?"var(--dear)": rc<0.97?"var(--cheap)":"var(--muted)";
+    const cp=Math.round((rc-1)*100), c=$("c-"+it.id);
+    c.textContent=(cp>0?"+":"")+cp+"%"; c.className="pct "+(cp>3?"dear":cp<-3?"cheap":"");
+  }
+  try{ localStorage.setItem("pp",JSON.stringify({f:from.value,t:to.value})); }catch(e){}
+}
+
+from.addEventListener("change",()=>{resetHomePrices(); setRate(); render();});
+to.addEventListener("change",()=>{setRate(); render();});
+amount.addEventListener("input",render);
+rate.addEventListener("input",()=>{rateEdited=true; render();});
+$("resetRate").addEventListener("click",()=>{setRate(); render();});
+$("swap").addEventListener("click",()=>{const f=from.value; from.value=to.value; to.value=f;
+  const h=C[from.value]; amount.value = nice(parse(amount.value)*refRateFor(to.value,from.value)); resetHomePrices(); setRate(); render();});
+function refRateFor(a,b){ return C[b].rate/C[a].rate; }
+
+resetHomePrices(); setRate(); render();
+</script>
+</body>
+</html>
