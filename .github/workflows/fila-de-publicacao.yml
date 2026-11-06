@@ -1,0 +1,141 @@
+# Fila de publicação: põe no ar, sozinha, no dia marcado, uma release que já está pronta.
+#
+# Toda terça às 10h (Brasília) procura os PRs abertos de release-* para a main que têm na descrição
+# a linha
+#   Publicar em: AAAA-MM-DD
+# e, entre os que já chegaram na data, pega o de menor versão. Aceita esse PR (merge commit), marca a
+# tag vX.Y.Z, chama a Action Publicar e, depois que o site estiver no ar, pede as cópias ao Wayback Machine.
+# Uma release por execução; as outras ficam para as próximas terças. Uma release de versão maior com
+# data mais cedo passa na frente (ex.: 1.5.4 marcada para antes da 1.5.2).
+# PR sem a linha "Publicar em:" fica fora da fila (é publicado à mão, como antes).
+#
+# Se o PR da vez não estiver pronto (sem o ✓ verde da Verificar ou com conflito), comenta no PR,
+# não publica nada e a execução falha (o GitHub avisa por e-mail).
+#
+# Dá para rodar na hora: aba Actions > Fila de publicação > Run workflow (só publica se a data já chegou).
+# Passo a passo em docs/fluxo-de-branches.md ("Publicação agendada").
+
+name: Fila de publicação
+
+on:
+  schedule:
+    - cron: '0 13 * * 2' # terça, 13h UTC = 10h em Brasília (o GitHub pode atrasar alguns minutos)
+  workflow_dispatch:
+
+concurrency:
+  group: fila-de-publicacao
+  cancel-in-progress: false
+
+permissions:
+  contents: write # merge e tag
+  pull-requests: write # comentar no PR
+  actions: write # chamar a Action Publicar
+  checks: read # ler o resultado da Action Verificar no PR
+  statuses: read # idem, para as verificações do tipo "status"
+
+jobs:
+  fila:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Escolher a release da vez
+        id: escolha
+        run: |
+          hoje=$(TZ=America/Sao_Paulo date +%F)
+          echo "Hoje em Brasília: $hoje"
+          gh pr list --base main --state open --limit 50 --json number,headRefName,body --jq '
+            .[] | select(.headRefName | startswith("release-"))
+            | [.number, .headRefName, ((.body // "") | capture("Publicar em: *(?<d>[0-9]{4}-[0-9]{2}-[0-9]{2})").d // "")]
+            | @tsv' > fila.tsv
+          # Só os que têm data, do menor para o maior número de versão.
+          awk -F'\t' '$3 != ""' fila.tsv | sort -t$'\t' -k2,2V > fila-com-data.tsv
+          echo "Fila (PR, branch, data):"
+          cat fila-com-data.tsv
+          if [ ! -s fila-com-data.tsv ]; then
+            echo "Nenhum PR de release com 'Publicar em:'. Nada a fazer."
+            exit 0
+          fi
+          # Só os que já chegaram na data (AAAA-MM-DD se compara como texto), ainda na ordem das versões.
+          awk -F'\t' -v hoje="$hoje" '$3 <= hoje' fila-com-data.tsv > fila-vencida.tsv
+          if [ ! -s fila-vencida.tsv ]; then
+            IFS=$'\t' read -r numero branch data < <(sort -t$'\t' -k3,3 fila-com-data.tsv)
+            echo "A próxima da fila é a $branch (PR #$numero), marcada para $data. Hoje não publica nada."
+            exit 0
+          fi
+          IFS=$'\t' read -r numero branch data < fila-vencida.tsv
+          echo "Da vez: $branch (PR #$numero), marcada para $data."
+          {
+            echo "numero=$numero"
+            echo "branch=$branch"
+            echo "versao=${branch#release-}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Conferir se o PR está pronto
+        if: steps.escolha.outputs.numero != ''
+        env:
+          NUMERO: ${{ steps.escolha.outputs.numero }}
+        run: |
+          # O GitHub às vezes demora para calcular se há conflito; tenta algumas vezes.
+          for i in 1 2 3 4 5 6; do
+            mergeable=$(gh pr view "$NUMERO" --json mergeable --jq .mergeable)
+            [ "$mergeable" != "UNKNOWN" ] && break
+            sleep 10
+          done
+          verificar=$(gh pr view "$NUMERO" --json statusCheckRollup --jq '
+            [.statusCheckRollup[] | select(.name == "verificar")] | last | .conclusion // "nenhuma"')
+          echo "Conflito: $mergeable / Verificar: $verificar"
+          problema=""
+          [ "$mergeable" != "MERGEABLE" ] && problema="o PR tem conflito com a main (ou o GitHub não conseguiu conferir: $mergeable)"
+          [ "$verificar" != "SUCCESS" ] && problema="${problema:+$problema; }a Action Verificar não está com ✓ verde (resultado: $verificar)"
+          if [ -n "$problema" ]; then
+            gh pr comment "$NUMERO" --body "A **Fila de publicação** não publicou este PR hoje: $problema. Corrija e rode de novo em Actions > Fila de publicação > Run workflow, ou espere a próxima terça."
+            echo "::error::Não publicado: $problema"
+            exit 1
+          fi
+
+      - name: Aceitar o PR (merge commit)
+        if: steps.escolha.outputs.numero != ''
+        run: gh pr merge "${{ steps.escolha.outputs.numero }}" --merge
+
+      - name: Marcar a tag
+        if: steps.escolha.outputs.numero != ''
+        continue-on-error: true # se a tag já existir, segue publicando
+        env:
+          NUMERO: ${{ steps.escolha.outputs.numero }}
+          VERSAO: ${{ steps.escolha.outputs.versao }}
+        run: |
+          sha=$(gh pr view "$NUMERO" --json mergeCommit --jq .mergeCommit.oid)
+          tag=$(gh api "repos/$GH_REPO/git/tags" -f tag="v$VERSAO" -f message="Pocket Parity $VERSAO" -f object="$sha" -f type=commit --jq .sha)
+          gh api "repos/$GH_REPO/git/refs" -f ref="refs/tags/v$VERSAO" -f sha="$tag" > /dev/null
+          echo "Tag v$VERSAO no commit $sha"
+
+      # O merge feito por uma Action não dispara a Publicar sozinho; por isso ela é chamada aqui.
+      - name: Publicar
+        if: steps.escolha.outputs.numero != ''
+        run: |
+          inicio=$(date -u +%FT%TZ)
+          gh workflow run publicar.yml --ref main
+          for i in $(seq 1 12); do
+            sleep 5
+            id=$(gh run list --workflow publicar.yml --event workflow_dispatch --created ">=$inicio" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            [ -n "$id" ] && break
+          done
+          if [ -z "$id" ]; then
+            echo "::error::A Action Publicar não começou. Rode à mão: Actions > Publicar > Run workflow (branch main)."
+            exit 1
+          fi
+          gh run watch "$id" --exit-status --interval 20
+
+      - name: Pedir cópias ao Wayback Machine
+        if: steps.escolha.outputs.numero != ''
+        continue-on-error: true
+        run: |
+          for url in \
+            https://pocketparity.pages.dev/ \
+            https://pocketparity.pages.dev/pocket-parity/; do
+            codigo=$(curl -s -o /dev/null -m 120 -w '%{http_code}' "https://web.archive.org/save/$url" || true)
+            echo "$codigo $url"
+          done

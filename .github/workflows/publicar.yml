@@ -1,0 +1,79 @@
+# Publica o site em produção (https://pocketparity.pages.dev) no Cloudflare Pages.
+# Só publica quando um PR de uma branch release-* é aceito (merge) na main.
+# Push direto na main, PRs de outras branches e as branches develop/release-* não publicam nada.
+# O site é estático (pasta site/, sem build): a Action audita com npm run check e envia a pasta.
+#
+# Também dá para republicar a versão atual da main à mão (por exemplo, logo depois de configurar
+# os secrets): aba Actions > Publicar > Run workflow, com a branch main. Isso não traz mudanças novas.
+#
+# Precisa de dois secrets no repositório (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN  - token com permissão "Cloudflare Pages: Edit"
+#   CLOUDFLARE_ACCOUNT_ID - ID da conta Cloudflare
+# Passo a passo em docs/fluxo-de-branches.md.
+
+name: Publicar
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+# Um deploy de cada vez; um novo espera o anterior terminar.
+concurrency:
+  group: publicar
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  publicar:
+    # PR aceito vindo de release-*, ou republicação manual da main.
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release-'))
+      || (github.event_name == 'workflow_dispatch' && github.ref_name == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROJETO: pocketparity
+      TEM_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+    steps:
+      - name: Baixar o código da main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Instalar Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+
+      - name: Auditar o site
+        run: npm run check
+
+      - name: Avisar que faltam os secrets
+        if: env.TEM_TOKEN != 'true'
+        run: |
+          echo "::warning::Site auditado, mas NÃO publicado: faltam os secrets CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID. Veja docs/fluxo-de-branches.md."
+
+      # Cria o projeto no Cloudflare Pages na primeira vez (depois só avisa que já existe).
+      - name: Criar o projeto no Cloudflare (só na primeira vez)
+        if: env.TEM_TOKEN == 'true'
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create ${{ env.PROJETO }} --production-branch=main
+
+      - name: Publicar em produção
+        if: env.TEM_TOKEN == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy site --project-name=${{ env.PROJETO }} --branch=main --commit-dirty=true

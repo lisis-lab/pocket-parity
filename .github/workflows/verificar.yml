@@ -1,0 +1,56 @@
+# Verifica todo pull request: o site precisa passar na auditoria (npm run check),
+# e o PR precisa seguir o fluxo de branches (docs/fluxo-de-branches.md):
+#   feat/*, fix/*, chore/*, docs/*  -> develop
+#   develop (ou fix/*)              -> release-*
+#   release-*                       -> main   (só este merge publica em produção)
+
+name: Verificar
+
+on:
+  pull_request:
+    branches: [develop, main, 'release-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verificar-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Conferir o fluxo de branches
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          ok=true
+          case "$BASE" in
+            main)
+              case "$HEAD" in release-*) ;; *) ok=false ;; esac ;;
+            release-*)
+              case "$HEAD" in develop|fix/*) ;; *) ok=false ;; esac ;;
+          esac
+          if [ "$ok" != true ]; then
+            echo "::error::PR de '$HEAD' para '$BASE' fora do fluxo. main só recebe release-*; release-* só recebe develop ou fix/*. Veja docs/fluxo-de-branches.md."
+            exit 1
+          fi
+          echo "Fluxo ok: $HEAD -> $BASE"
+
+      - name: Baixar o código
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+
+      - name: Auditar o site
+        run: npm run check

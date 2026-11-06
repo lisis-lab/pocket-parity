@@ -1,0 +1,13 @@
+{
+  "name": "pocket-parity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pocket Parity: câmbio e poder de compra para turistas (Lisis Lab).",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
