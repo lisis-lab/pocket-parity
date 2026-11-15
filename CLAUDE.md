@@ -6,6 +6,7 @@ Projeto CentAtlas (marca provisória): sites de ferramentas financeiras monetiza
 - Site estático puro em `site/` (sem framework, sem build). Cada ferramenta numa pasta própria com `index.html`.
 - Toda fórmula deve estar documentada em `docs/methodology.md` antes de ir para o site.
 - Decisões relevantes vão em `docs/decisions.md` (data, decisão, motivo).
+- Contexto atual, fila de tarefas e referências a specs: `docs/DEV_CONTEXT_MASTER.md`. Ler no início e atualizar ao abrir ou fechar uma tarefa.
 - Dados vêm só de fontes oficiais (Eurostat, World Bank ICP, BEA, BLS, ECB, FRED, BCB, IBGE). Nunca inventar números; dados provisórios devem ser marcados como ilustrativos na página.
 - Nesta versão os dados são buscados ao vivo no navegador (sem servidor, cache de 24 h). Sem dado, sem número: a página mostra aviso de lentidão/offline, nunca valores de reserva.
 - Testes: `npm run check` (node --test + auditoria `check.mjs`).
