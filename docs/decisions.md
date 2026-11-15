@@ -15,3 +15,4 @@
 | 2026-11-06 | Dados oficiais ao vivo no navegador (ICP via JSONP, BCE, Banco Mundial, BLS, SIDRA); sem números de reserva | Sem servidor nesta versão; nunca mostrar número sem fonte |
 | 2026-11-06 | Página inicial com mini calculadora no destaque | Mostra o valor do site no primeiro olhar |
 | 2026-11-06 | Ferramentas: Pocket Parity, orçamento diário, cartão ou dinheiro, inflação | Mistura de viagem e finanças pessoais |
+| 2026-11-15 | Contexto e fila de tarefas em `docs/DEV_CONTEXT_MASTER.md` (formato do Weekeda); feedback em `docs/conversas/` | Um lugar só para o estado atual e o que está aberto, com IDs ligados às specs |
