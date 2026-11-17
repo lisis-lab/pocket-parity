@@ -16,3 +16,6 @@
 | 2026-11-06 | Página inicial com mini calculadora no destaque | Mostra o valor do site no primeiro olhar |
 | 2026-11-06 | Ferramentas: Pocket Parity, orçamento diário, cartão ou dinheiro, inflação | Mistura de viagem e finanças pessoais |
 | 2026-11-15 | Contexto e fila de tarefas em `docs/DEV_CONTEXT_MASTER.md` (formato do Weekeda); feedback em `docs/conversas/` | Um lugar só para o estado atual e o que está aberto, com IDs ligados às specs |
+| 2026-11-16 | Idiomas do site: inglês, português do Brasil, português de Portugal, francês, espanhol e alemão (I18N-01); caminhos a definir na spec | Público nos EUA, Europa e América Latina; pt-PT separado do pt-BR por vocabulário, moeda e índice de inflação |
+| 2026-11-16 | Ferramentas novas só se cruzam dados oficiais atuais com números do usuário (fora: conversor de moeda comum e o que uma IA responde sozinha) | Não ser substituível por IA e evitar a recusa por "Low value content" que o Codekitto teve |
+| 2026-11-16 | Pedir o AdSense só depois de SEO-01, ADS-01 e CONT-01 no ar, com o domínio com 4–8 semanas e cliques diários | Codekitto recusado em 03/11/2026 por site novo, poucas visitas e texto repetido |
